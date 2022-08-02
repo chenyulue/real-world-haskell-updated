@@ -1478,7 +1478,7 @@ The first pattern only matches if the list is at least two elements long
 the list\'s second element. The second pattern is matched if the first
 fails.
 
-## <a name="intro-loc-var"></a>Introducing local variables
+## <span id="intro-loc-var">Introducing local variables</span>
 
 Within the body of a function, we can introduce new local variables
 whenever we need them, using a `let` expression. Here is a simple

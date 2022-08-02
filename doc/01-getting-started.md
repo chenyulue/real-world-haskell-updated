@@ -1,5 +1,3 @@
-<link rel="stylesheet" type="text/css" href="./assets/style.css"></link>
-
 # Chapter 1: Getting Started
 
 As you read the early chapters of this book, keep in mind that we will sometimes introduce ideas in restricted, simplified form. Haskell is a deep language, and presenting every aspect of a given subject all at once is likely to prove overwhelming. As we build a solid foundation in Haskell, we will expand upon these initial explanations.
@@ -15,6 +13,7 @@ GHC has three main components.
 - `runghc` is a program for running Haskell programs as scripts, without needing to compile them first.
 
 > ℹ️ **How we refer to the components of GHC**
+> 
 > When we discuss the GHC system as a whole, we will refer to it as GHC. If we are talking about a specific command, we will mention `ghc`, `ghci`, or `runghc` by name.
 
 In this book, we assume that you\'re using at least version 9.0.2 of GHC, which was released in 2021. To obtain a copy of GHC visit [the GHC download page](https://www.haskell.org/ghc/download.html), and look for the list of binary packages and installers.
@@ -28,6 +27,7 @@ For more detailed information about how to install GHC on a variety of popular p
 The interactive interpreter for GHC is a program named `ghci`. It lets us enter and evaluate Haskell expressions, explore modules, and debug our code. If you are familiar with Python or Ruby, `ghci` is somewhat similar to `python` and `irb`, the interactive Python and Ruby interpreters.
 
 > ℹ️ **The `ghci` command has a narrow focus**
+> 
 > We typically cannot copy some code out of a Haskell source file and paste it into `ghci`. This does not have a significant effect on debugging pieces of code, but it can initially be surprising if you are used to, say, the interactive Python interpreter.
 
 On Unix-like systems, we run `ghci` as a command in a shell window. On Windows, since the recommended installation is through *GHCup* or *stack*, we can still run `ghci` or `stack exec ghci` command in a shell window such as *cmd* or *powershell*.
@@ -35,7 +35,9 @@ On Unix-like systems, we run `ghci` as a command in a shell window. On Windows, 
 When we run `ghci`, it displays a startup banner, followed by a `Prelude>` prompt. Here, we\'re showing version 9.0.2.
 
 ```screen
-ghci GHCi, version 9.0.2: https://www.haskell.org/ghc/  :? for help Prelude>
+$ ghci 
+GHCi, version 9.0.2: https://www.haskell.org/ghc/  :? for help 
+Prelude>
 ```
 
 The word `Prelude` in the prompt indicates that `Prelude`, a standard library of useful functions, is loaded and ready to use. When we load other modules or source files, they will show up in the prompt, too.
@@ -46,6 +48,7 @@ The word `Prelude` in the prompt indicates that `Prelude`, a standard library of
 The `Prelude` module is sometimes referred to as \"the standard prelude\", because its contents are defined by the Haskell 2010 standard. Usually, it\'s simply shortened to \"the prelude\".
 
 > ℹ️ **About the ghci prompt**
+> 
 > The prompt displayed by `ghci` changes frequently depending on what modules we have loaded. It can often grow long enough to leave little visual room on a single line for our input.
 >
 > For brevity and consistency, we have replaced `ghci`\'s default prompts throughout this book with the prompt string `ghci>`.
@@ -60,7 +63,8 @@ The `Prelude` module is sometimes referred to as \"the standard prelude\", becau
 The prelude is always implicitly available; we don\'t need to take any actions to use the types, values, or functions it defines. To use definitions from other modules, we must load them into `ghci`, using the
 `:module` command.
 
-``` screen ghci> :module +Data.Ratio
+```screen 
+ghci> :module +Data.Ratio
 ```
 
 We can now use the functionality of the `Data.Ratio` module, which lets us work with rational numbers (fractions).
@@ -73,19 +77,29 @@ In addition to providing a convenient interface for testing code fragments, `ghc
 
 We can immediately start entering expressions, to see what `ghci` will do with them. Basic arithmetic works similarly to languages like C and Python: we write expressions in *infix* form, where an operator appears between its operands.
 
-``` screen ghci> 2 + 2 4
-ghci> 31337 * 101 3165037 ghci> 7.0 / 2.0 3.5
+```screen 
+ghci> 2 + 2 
+4
+ghci> 31337 * 101 
+3165037 
+ghci> 7.0 / 2.0 
+3.5
 ```
 
 The infix style of writing an expression is just a convenience: we can also write an expression in *prefix* form, where the operator precedes its arguments. To do this, we must enclose the operator in parentheses.
 
-``` screen ghci> 2 + 2 4
-ghci> (+) 2 2 4
+```screen 
+ghci> 2 + 2 
+4
+ghci> (+) 2 2 
+4
 ```
 
 As the expressions above imply, Haskell has a notion of integers and floating point numbers. Integers can be arbitrarily large. Here, `(^)` provides integer exponentiation.
 
-``` screen ghci> 313 ^ 15 27112218957718876716220410905036741257
+```screen 
+ghci> 313 ^ 15 
+27112218957718876716220410905036741257
 ```
 
 ### An arithmetic quirk: writing negative numbers
@@ -94,13 +108,15 @@ Haskell presents us with one peculiarity in how we must write numbers: it\'s oft
 
 We\'ll start by writing a negative number.
 
-``` screen ghci> -3
+```screen 
+ghci> -3
 -3
 ```
 
 The `-` above is a unary operator. In other words, we didn\'t write the single number \"-3\"; we wrote the number \"3\", and applied the operator `-` to it. The `-` operator is Haskell\'s only unary operator, and we cannot mix it with infix operators.
 
-``` screen ghci> 2 + -3
+```screen 
+ghci> 2 + -3
 
 <interactive>:1:1: error:
     Precedence parsing error
@@ -109,8 +125,10 @@ The `-` above is a unary operator. In other words, we didn\'t write the single n
 
 If we want to use the unary minus near an infix operator, we must wrap the expression it applies to in parentheses.
 
-``` screen ghci> 2 + (-3)
--1 ghci> 3 + (-(13 * 37))
+```screen 
+ghci> 2 + (-3)
+-1 
+ghci> 3 + (-(13 * 37))
 -478
 ```
 
@@ -118,12 +136,15 @@ This avoids a parsing ambiguity. When we apply a function in Haskell, we write t
 
 *Most* of the time, we can omit white space (\"blank\" characters such as space and tab) from expressions, and Haskell will parse them as we intended. But not always. Here is an expression that works:
 
-``` screen ghci> 2*3 6
+```screen 
+ghci> 2*3 
+6
 ```
 
 And here is one that seems similar to the problematic negative number example above, but results in a different error message.
 
-``` screen ghci> 2*-3
+```screen 
+ghci> 2*-3
 
 <interactive>:1:1: error:
     • Variable not in scope: (*-) :: t0 -> t1 -> t
@@ -134,7 +155,8 @@ And here is one that seems similar to the problematic negative number example ab
 
 Here, the Haskell implementation is reading `*-` as a single operator. Haskell lets us define new operators (a subject that we will return to later), but we haven\'t defined `*-`. Once again, a few parentheses get us and `ghci` looking at the expression in the same way.
 
-``` screen ghci> 2*(-3)
+```screen 
+ghci> 2*(-3)
 -6
 ```
 
@@ -144,12 +166,17 @@ Compared to other languages, this unusual treatment of negative numbers might se
 
 The values of Boolean logic in Haskell are `True` and `False`. The capitalization of these names is important. The language uses C-influenced operators for working with Boolean values: `(&&)` is logical \"and\", and `(||)` is logical \"or\".
 
-``` screen ghci> True && False False ghci> False || True True
+```screen 
+ghci> True && False 
+False 
+ghci> False || True 
+True
 ```
 
 While some programming languages treat the number zero as synonymous with `False`, Haskell does not, nor does it consider a non-zero value to be `True`.
 
-``` screen ghci> True && 1
+```screen 
+ghci> True && 1
 
 <interactive>:1:9: error:
     • No instance for (Num Bool) arising from the literal ‘1’
@@ -162,11 +189,12 @@ Once again, we are faced with a substantial-looking error message. In brief, it 
 
 Here is a more detailed breakdown of the error message.
 
-- \"`No instance for (Num Bool)`\" tells us that `ghci` is trying to treat the numeric value 1 as having a Bool type, but it cannot.
+- \"`No instance for (Num Bool)`\" tells us that `ghci` is trying to treat the numeric value `1` as having a Bool type, but it cannot.
 - \"`` arising from the literal `1' ``\" indicates that it was our use of the number `1` that caused the problem.
 - \"`` In the definition of `it' ``\" refers to a `ghci` short cut that we will revisit in a few pages.
 
 > 💡 **Remain fearless in the face of error messages**
+> 
 > We have an important point to make here, which we will repeat throughout the early sections of this book. If you run into problems or error messages that you do not yet understand, *don\'t panic*. Early on, all you have to do is figure out enough to make progress on a problem. As you acquire experience, you will find it easier to understand parts of error messages that initially seem obscure.
 >
 > The numerous error messages have a purpose: they actually help us in writing correct code, by making us perform some amount of debugging \"up front\", before we ever run a program. If you are coming from a background of working with more permissive languages, this way of working may come as something of a shock. Bear with us.
@@ -259,6 +287,7 @@ ghci> e
 Oh well. We have to define it ourselves.
 
 > ℹ️ **Don\'t worry about the error message**
+> 
 > If the above \"not in scope\" error message seems a little daunting, do not worry. All it means is that there is no variable defined with the name `e`.
 
 Using `ghci`\'s `let` construct, we can make a temporary definition of `e` ourselves. However, we can omit the `let` construct if the GHC used is not antiquated.
@@ -278,6 +307,7 @@ ghci> (e ** pi) - pi
 ```
 
 > ⛔ **This syntax is ghci-specific**
+> 
 > The syntax for `let` that `ghci` accepts is not the same as we would use at the \"top level\" of a normal Haskell program. We will see the normal syntax in the section called [\"Introducing local variables\"](03-defining-types-streamlining-functions.md#intro-loc-var).
 
 
