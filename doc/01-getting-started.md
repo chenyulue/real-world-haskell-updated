@@ -321,17 +321,11 @@ There is no need to remember all of the precedence and associativity rules numbe
 
 ## Command line editing in ghci
 
-On most systems, `ghci` has some amount of command line editing ability.
-In case you are not familiar with command line editing, it\'s a huge time saver. The basics are common to both Unix-like and Windows systems.
-Pressing the ↑ key on your keyboard recalls the last line of input you entered; pressing ↑ repeatedly cycles through earlier lines of input.
-You can use the ← and → arrow keys to move around inside a line of input. On Unix (but not Windows, unfortunately), the `tab` key completes partially entered identifiers.
+On most systems, `ghci` has some amount of command line editing ability. In case you are not familiar with command line editing, it\'s a huge time saver. The basics are common to both Unix-like and Windows systems. Pressing the ↑ key on your keyboard recalls the last line of input you entered; pressing ↑ repeatedly cycles through earlier lines of input. You can use the ← and → arrow keys to move around inside a line of input. On Unix and Windows, the `tab` key completes partially entered identifiers.
 
-::: TIP Where to look for more information
-
-We\'ve barely scratched the surface of command line editing here. Since you can work more effectively if you\'re more familiar with the capabilities of your command line editing system, you might find it useful to do some further reading. `ghci` uses the Haskeline library under the hood, which is
-[powerful](https://github.com/judah/haskeline/wiki/KeyBindings) and
-[customisable](https://github.com/judah/haskeline/wiki/UserPreferences).
-:::
+> 💡 **Where to look for more information**
+> 
+> We\'ve barely scratched the surface of command line editing here. Since you can work more effectively if you\'re more familiar with the capabilities of your command line editing system, you might find it useful to do some further reading. `ghci` uses the [haskeline](https://hackage.haskell.org/package/haskeline) library under the hood, which is [powerful](https://github.com/judah/haskeline/wiki/KeyBindings) and [customisable](https://github.com/judah/haskeline/wiki/UserPreferences).
 
 ## Lists
 
