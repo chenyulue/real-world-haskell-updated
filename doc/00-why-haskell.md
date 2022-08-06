@@ -29,7 +29,7 @@ Lazy evaluation has some spooky effects. Let\'s say we want to find the *k* leas
 Better yet, our Haskell code that operates so efficiently is tiny, and uses standard library functions.
 
 ```haskell
--- file: Ch00/KMinima.hs
+-- file: src/Ch00/KMinima.hs
 -- lines beginning with "--" are comments.
 
  minima k xs = take k (sort xs)

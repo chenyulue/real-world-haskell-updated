@@ -36,6 +36,16 @@ executables:
     dependencies:
     - real-world-haskell-updated
 
+  wc:
+    main:                wc.hs
+    source-dirs:         app/Ch01
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - real-world-haskell-updated  
+
 tests:
   real-world-haskell-updated-test:
     main:                Spec.hs

@@ -47,6 +47,18 @@ executable real-world-haskell-updated-exe
     , real-world-haskell-updated
   default-language: Haskell2010
 
+executable wc
+  main-is: wc.hs
+  other-modules:
+      Paths_real_world_haskell_updated
+  hs-source-dirs:
+      app/Ch01
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , real-world-haskell-updated
+  default-language: Haskell2010
+
 test-suite real-world-haskell-updated-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
