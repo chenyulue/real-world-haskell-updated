@@ -336,12 +336,12 @@ ghci> [1, 2, 3]
 ```
 
 > ℹ️ **Commas are separators, not terminators**
-> 
+>
 > Some languages permit the last element in a list to be followed by an optional trailing comma before a closing bracket, but Haskell doesn\'t allow this. If you leave in a trailing comma (e.g. `[1,2,]`), you\'ll get a parse error.
 
 A list can be of any length. The empty list is written `[]`.
 
-```screen 
+```screen
 ghci> []
 []
 ghci> ["foo", "bar", "baz", "quux", "fnord", "xyzzy"]
@@ -350,7 +350,7 @@ ghci> ["foo", "bar", "baz", "quux", "fnord", "xyzzy"]
 
 All elements of a list must be of the same type. Here, we violate this rule: our list starts with two Bool values, but ends with a string.
 
-```screen 
+```screen
 ghci> [True, False, "testing"]
 
 <interactive>:1:15: error:
@@ -366,7 +366,7 @@ Once again, `ghci`\'s error message is verbose, but it\'s simply telling us that
 
 If we write a series of elements using *enumeration notation*, Haskell will fill in the contents of the list for us.
 
-```screen 
+```screen
 ghci> [1..10]
 [1,2,3,4,5,6,7,8,9,10]
 ```
@@ -377,7 +377,7 @@ By the way, notice that the above use of range notation gives us a *closed inter
 
 When we write an enumeration, we can optionally specify the size of the step to use by providing the first two elements, followed by the value at which to stop generating the enumeration.
 
-```screen 
+```screen
 ghci> [1.0,1.25..2.0]
 [1.0,1.25,1.5,1.75,2.0]
 ghci> [1,4..15]
@@ -391,14 +391,14 @@ In the latter case above, the list is quite sensibly missing the end point of th
 We can omit the end point of an enumeration. If a type doesn\'t have a natural \"upper bound\", this will produce values indefinitely. For example, if you type `[1..]` at the `ghci` prompt, you\'ll have to interrupt or kill `ghci` to stop it from printing an infinite succession of ever-larger numbers. If you are tempted to do this, type `Ctrl-C` to halt the enumeration. We will find later on that infinite lists are often useful in Haskell.
 
 > ⛔ **Beware enumerating floating point numbers**
-> 
+>
 > Here\'s a non-intuitive bit of behaviour.
 >
-> ```screen 
+> ```screen
 > ghci> [1.0..1.8]
 > [1.0,2.0]
 > ```
-> 
+>
 > Behind the scenes, to avoid floating point roundoff problems, the Haskell implementation enumerates from `1.0` to `1.8+0.5`.
 >
 > Using enumeration notation over floating point numbers can pack more than a few surprises, so if you use it at all, be careful. Floating point behavior is quirky in all programming languages; there is nothing unique to Haskell here.
@@ -407,7 +407,7 @@ We can omit the end point of an enumeration. If a type doesn\'t have a natural \
 
 There are two ubiquitous operators for working with lists. We concatenate two lists using the `(++)` operator.
 
-```screen 
+```screen
 ghci> [3,1,3] ++ [3,7]
 [3,1,3,3,7]
 ghci> [] ++ [False,True] ++ [True]
@@ -416,7 +416,7 @@ ghci> [] ++ [False,True] ++ [True]
 
 More basic is the `(:)` operator, which adds an element to the front of a list. This is pronounced \"cons\" (short for \"construct\").
 
-```screen 
+```screen
 ghci> 1 : [2,3]
 [1,2,3]
 ghci> 1 : []
@@ -425,20 +425,20 @@ ghci> 1 : []
 
 You might be tempted to try writing `[1,2] : 3` to add an element to the end of a list, but `ghci` will reject this with an error message, because the first argument of `(:)` must be an element, and the second must be a list.
 
-## Strings and characters
+## <span id="str&char">Strings and characters</span>
 
 If you know a language like Perl or C, you\'ll find Haskell\'s notations for strings familiar.
 
 A text string is surrounded by double quotes.
 
-```screen 
+```screen
 ghci> "This is a string."
 "This is a string."
 ```
 
 As in many languages, we can represent hard-to-see characters by \"escaping\" them. Haskell\'s escape characters and escaping rules follow the widely used conventions established by the C language. For example, `'\n'` denotes a newline character, and `'\t'` is a tab character. For complete details, see [Appendix B, *Characters, strings, and escaping rules*](30-appendix-B.md).
 
-```screen 
+```screen
 ghci> putStrLn "Here's a newline -->\n<-- See?"
 Here's a newline -->
 <-- See?
@@ -446,14 +446,14 @@ Here's a newline -->
 
 Haskell makes a distinction between single characters and text strings. A single character is enclosed in single quotes.
 
-```screen 
+```screen
 ghci> 'a'
 'a'
 ```
 
 In fact, a text string is simply a list of individual characters. Here\'s a painful way to write a short string, which `ghci` gives back to us in a more familiar form.
 
-```screen 
+```screen
 ghci> a = ['l', 'o', 't', 's', ' ', 'o', 'f', ' ', 'w', 'o', 'r', 'k']
 ghci> a
 "lots of work"
@@ -463,21 +463,21 @@ True
 
 The empty string is written `""`, and is a synonym for `[]`.
 
-```screen 
+```screen
 ghci> "" == []
 True
 ```
 
 Since a string is a list of characters, we can use the regular list operators to construct new strings.
 
-```screen 
+```screen
 ghci> 'a':"bc"
 "abc"
 ghci> "foo" ++ "bar"
 "foobar"
 ```
 
-## First steps with types
+## <span id="fst-steps-with-types">First steps with types</span>
 
 While we\'ve talked a little about types already, our interactions with `ghci` have so far been free of much type-related thinking. We haven\'t told `ghci` what types we\'ve been using, and it\'s mostly been willing to accept our input.
 
@@ -485,7 +485,7 @@ Haskell requires type names to start with an uppercase letter, and variable name
 
 The first thing we can do to start exploring the world of types is to get `ghci` to tell us more about what it\'s doing. `ghci` has a command, `:set`, that lets us change a few of its default behaviours. We can tell it to print more type information as follows.
 
-```screen 
+```screen
 ghci> :set +t 
 ghci> 'c'
 'c'
@@ -505,7 +505,7 @@ What the `+t` does is tell `ghci` to print the type of an expression after the e
 >
 > That `it` variable is a handy `ghci` shortcut. It lets us use the result of the expression we just evaluated in a new expression.
 >
-> ```screen 
+> ```screen
 > ghci> "foo"
 > "foo"
 > it :: String
@@ -516,7 +516,7 @@ What the `+t` does is tell `ghci` to print the type of an expression after the e
 >
 > When evaluating an expression, `ghci` won\'t change the value of `it` if the evaluation fails. This lets you write potentially bogus expressions with something of a safety net.
 >
-> ```screen 
+> ```screen
 > ghci> it
 > "foobar"
 > it :: [Char]
@@ -539,19 +539,19 @@ What the `+t` does is tell `ghci` to print the type of an expression after the e
 
 Here are a few more of Haskell\'s names for types, from expressions of the sort we\'ve already seen.
 
-```screen 
+```screen
 ghci> 7 ^ 80
 40536215597144386832065866109016673800875222251012083746192454448001 
 it :: Num a => a
 ```
 
-The GHC of old version would tell `it :: Integer`. Haskell has several numeric types. For example, a literal number such as `1` could, depending on the context in which it appears, be an integer or a floating point value. In the context of `ghci`, an integral number used to default to the type of `Integer`, the value of which is bounded only by your system\'s memory capacity, and a floating number used to default to `Double`. 
+The GHC of old version would tell `it :: Integer`. Haskell has several numeric types. For example, a literal number such as `1` could, depending on the context in which it appears, be an integer or a floating point value. In the context of `ghci`, an integral number used to default to the type of `Integer`, the value of which is bounded only by your system\'s memory capacity, and a floating number used to default to `Double`.
 
 However, the recent GHC doesn't give such a specific type. `Num a => a` means that, in effect, the type is numeric. We will see more of this style of type annotation in [Chapter 6, Using Type Classes](06-using-typeclasses.md).
 
 Rational numbers don\'t look quite the same as integers. To construct a rational number, we use the `(%)` operator. The numerator is on the left, the denominator on the right.
 
-```screen 
+```screen
 ghci> :m +Data.Ratio 
 ghci> 11 % 29 
 11%29 
@@ -562,7 +562,7 @@ For convenience, `ghci` lets us abbreviate many commands, so we can write `:m` i
 
 Notice *type* information on the right hand side of the `::` above. We can read this as a \"ratio of integral numbers\". We might guess that a `Ratio` must have values belonging to the type class `Integral` as both numerator and denominator, such as the `Int` and `Integer` types. Sure enough, if we try to construct a `Ratio` where the numerator and denominator are of different types, or of the same non-integral type, `ghci` complains.
 
-```screen 
+```screen
 ghci> 3.14 % 8
 
 <interactive>:1:1: error:
@@ -595,7 +595,7 @@ ghci> 1.2 % 3.4
 
 Although it is initially useful to have `:set +t` giving us type information for every expression we enter, this is a facility we will quickly outgrow. After a while, we will often know what type we expect an expression to have. We can turn off the extra type information at any time, using the `:unset` command.
 
-```screen 
+```screen
 ghci> :unset +t 
 ghci> 2 
 2
@@ -603,7 +603,7 @@ ghci> 2
 
 Even with this facility turned off, we can still get that type information easily when we need it, using another `ghci` command.
 
-```screen 
+```screen
 ghci> :type 'a'
 'a' :: Char 
 ghci> "foo"
@@ -614,10 +614,10 @@ it :: String
 
 The `:type` command will print type information for any expression we give it (including `it`, as we see above). It won\'t actually evaluate the expression; it only checks its type and prints that. Therefore, we can check the type of an expression.
 
-```screen 
+```screen
 ghci> :type 3 + 2 
 3 + 2 :: (Num a) => a
-``` 
+```
 
 ## A simple program
 
