@@ -26,6 +26,11 @@ source-repository head
 library
   exposed-modules:
       Ch00.KMinima
+      Ch02.Add
+      Ch02.Assign
+      Ch02.MyDrop
+      Ch02.RoundToEven
+      Ch02.ShortCircuit
       Lib
   other-modules:
       Paths_real_world_haskell_updated
