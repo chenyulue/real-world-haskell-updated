@@ -2124,7 +2124,7 @@ merely that we ought to be mindful of the potential pitfalls when we\'re
 thinking of using them. In later chapters, we will see that they are
 often invaluable as \"glue\".
 
-## Partial function application and currying
+## <span id="partial-func-curry">Partial function application and currying</span>
 
 You may wonder why the `->` arrow is used for what seems to be two
 purposes in the type signature of a function.

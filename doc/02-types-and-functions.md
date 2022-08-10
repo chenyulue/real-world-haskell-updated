@@ -715,7 +715,7 @@ We have established several important points here.
 - Laziness leads us to defer evaluation until we need a value, and to evaluate just enough of an expression to establish its value.
 - The result of applying a function may be a thunk (a deferred expression).
 
-## Polymorphism in Haskell
+## <span id="polymorphism-in-haskell">Polymorphism in Haskell</span>
 
 When we introduced lists, we mentioned that the list type is polymorphic. We'll talk about Haskell's polymorphism in more detail here.
 
@@ -780,55 +780,40 @@ The result type of `fst` is `a`. We've already mentioned that parametric polymor
 
 #### Further reading
 
-There is a deep mathematical sense in which any non-pathological function of type `(a,b) -> a` must do exactly what `fst` does. Moreover, this line of reasoning extends to more complicated polymorphic functions. The paper \[[Wadler89](bibliography.org::Wadler89)\] covers this procedure in depth.
+There is a deep mathematical sense in which any non-pathological function of type `(a,b) -> a` must  exactly what `fst` does. Moreover, this line of reasoning extends to more complicated polymorphic functions. The paper [[Wadler89](31-bibliography.md#Wadler89)] covers this procedure in depth.
 
 ## The type of a function of more than one argument
 
 So far, we haven't looked much at signatures for functions that take more than one argument. We've already used a few such functions; let's look at the signature of one, `take`.
 
-``` screen ghci> :type take take :: Int -> [a] -> [a]
+```screen
+ghci> :type take 
+take :: Int -> [a] -> [a]
 ```
 
 It's pretty clear that there's something going on with an `Int` and some lists, but why are there two `->` symbols in the signature? Haskell groups this chain of arrows from right to left; that is, `->` is right-associative. If we introduce parentheses, we can make it clearer how this type signature is interpreted.
 
-::: captioned-content
-::: caption Take.hs
-:::
-
-``` haskell take :: Int -> ([a] -> [a])
+```haskell
+-- File: src/Ch02/Take.hs
+take :: Int -> ([a] -> [a])
 ```
-
-:::
 
 From this, it looks like we ought to read the type signature as a function that takes one argument, an `Int`, and returns another function. That other function also takes one argument, a list, and returns a list of the same type as its result.
 
-This is correct, but it's not easy to see what its consequences might be. We'll return to this topic in [the section called "Partial function application and currying"](4-functional-programming.org::*Partial function application and currying),
-once we've spent a bit of time writing functions. For now, we can treat the type following the last `->` as being the function's return type,
-and the preceding types to be those of the function's arguments.
+This is correct, but it's not easy to see what its consequences might be. We'll return to this topic in the section called ["Partial function application and currying"](04-functional-programming.md#partial-func-curry), once we've spent a bit of time writing functions. For now, we can treat the type following the last `->` as being the function's return type, and the preceding types to be those of the function's arguments.
 
 We can now write a type signature for the `myDrop` function that we defined earlier.
 
-::: captioned-content
-::: caption MyDrop.hs
-:::
-
-``` haskell myDrop :: Int -> [a] -> [a]
+```haskell
+-- File: src/Ch02/MyDrop.hs
+myDrop :: Int -> [a] -> [a]
 ```
-
-:::
 
 ## Exercises
 
-1. Haskell provides a standard function, `last :: [a] -> a`, that
-    returns the last element of a list. From reading the type alone,
-    what are the possible valid behaviours (omitting crashes and
-    infinite loops) that this function could have? What are a few things
-    that this function clearly cannot do?
-2. Write a function `lastButOne`, that returns the element *before* the
-    last.
-3. Load your `lastButOne` function into `ghci`, and try it out on lists
-    of different lengths. What happens when you pass it a list that's
-    too short?
+1. Haskell provides a standard function, `last :: [a] -> a`, that returns the last element of a list. From reading the type alone, what are the possible valid behaviours (omitting crashes and infinite loops) that this function could have? What are a few things that this function clearly cannot do?
+2. Write a function `lastButOne`, that returns the element *before* the last.
+3. Load your `lastButOne` function into `ghci`, and try it out on lists of different lengths. What happens when you pass it a list that's too short?
 
 ## Why the fuss over purity?
 
@@ -836,7 +821,9 @@ Few programming languages go as far as Haskell in insisting that purity should b
 
 Because the result of applying a pure function can only depend on its arguments, we can often get a strong hint of what a pure function does by simply reading its name and understanding its type signature. As an example, let's look at `not`.
 
-``` screen ghci> :type not not :: Bool -> Bool
+```screen
+ghci> :type not 
+not :: Bool -> Bool
 ```
 
 Even if we didn't know the name of this function, its signature alone limits the possible valid behaviours it could have.
@@ -855,29 +842,18 @@ Much of the risk in software lies in talking to the outside world, be it coping 
 
 ## Conclusion
 
-In this chapter, we've had a whirlwind overview of Haskell's type system and much of its syntax. We've read about the most common types,
-and discovered how to write simple functions. We've been introduced to polymorphism, conditional expressions, purity, and about lazy evaluation.
+In this chapter, we've had a whirlwind overview of Haskell's type system and much of its syntax. We've read about the most common types, and discovered how to write simple functions. We've been introduced to polymorphism, conditional expressions, purity, and about lazy evaluation.
 
-This all amounts to a lot of information to absorb. In [Chapter 3,
-*Defining Types, Streamlining Functions*](3-defining-types-streamlining-functions.org), we'll build on this basic knowledge to further enhance our understanding of Haskell.
+This all amounts to a lot of information to absorb. In [Chapter 3, *Defining Types, Streamlining Functions*](03-defining-types-streamlining-functions.md), we'll build on this basic knowledge to further enhance our understanding of Haskell.
 
 ## Footnotes
 
-[^1]: "If it walks like a duck, and quacks like a duck, then let's
-    call it a duck."
+[^1]: "If it walks like a duck, and quacks like a duck, then let's call it a duck."
 
-[^2]: Occasionally, we need to give the compiler a little information to
-    help it to make a choice in understanding our code.
+[^2]: Occasionally, we need to give the compiler a little information to help it to make a choice in understanding our code.
 
-[^3]: We'll talk more about polymorphism in [the section called
-    "Polymorphism in
-    Haskell"](2-types-and-functions.org::*Polymorphism in Haskell).
+[^3]: We'll talk more about polymorphism in the section called ["Polymorphism in Haskell"](#polymorphism-in-haskell).
 
-[^4]: The environment in which `ghci` operates is called the IO monad.
-    In [Chapter 7, *I/O*](7-io.org), we will cover the IO monad in
-    depth, and the seemingly arbitrary restrictions that `ghci` places
-    on us will make more sense.
+[^4]: The environment in which `ghci` operates is called the IO monad. In [Chapter 7, *I/O*](07-io.md), we will cover the IO monad in depth, and the seemingly arbitrary restrictions that `ghci` places on us will make more sense.
 
-[^5]: The terms "non-strict" and "lazy" have slightly different
-    technical meanings, but we won't go into the details of the
-    distinction here.
+[^5]: The terms "non-strict" and "lazy" have slightly different technical meanings, but we won't go into the details of the distinction here.

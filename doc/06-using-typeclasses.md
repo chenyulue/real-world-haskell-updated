@@ -307,7 +307,7 @@ resource. It will give you a description of the type classes, and
 usually also will tell you which functions you must implement to have a
 complete definition.
 
-### Show
+### <span id="Show">Show</span>
 
 The `Show` type class is used to convert values to \~String\~s. It is
 perhaps most commonly used to convert numbers to \~String\~s, but it is

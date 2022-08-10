@@ -31,6 +31,7 @@ library
       Ch02.MyDrop
       Ch02.RoundToEven
       Ch02.ShortCircuit
+      Ch03.BookStore
       Lib
   other-modules:
       Paths_real_world_haskell_updated
