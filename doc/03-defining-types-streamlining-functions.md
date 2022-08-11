@@ -26,7 +26,6 @@ In this example, the `Int` represents a book's identifier (e.g. in a stock datab
 
 To make the link to a concept we've already seen, the `BookInfo` Type contains the same components as a 3-tuple of type `(Int, String, [String])`, but it has a distinct type. We can't accidentally (or deliberately) use one in a context where the other is expected. For instance, a bookstore is also likely to carry magazines.
 
-
 ```haskell
 -- File: src/Ch03/BookStore.hs
 
@@ -41,7 +40,6 @@ Even though this `MagazineInfo` type has the same structure as our `BookInfo` ty
 > We'll explain the full meaning of `deriving (Show)` later, in the section called ["Show"](06-using-typeclasses.md#Show) need to tack this onto a type declaration so that `ghci` will automatically know how to print a value of this type.
 
 We can create a new value of type `BookInfo` by treating `Book` as a function, and applying it with arguments of types `Int`, `String`, and `[String]`.
-
 
 ```haskell
 -- File: src/Ch03/BookStore.hs
@@ -106,16 +104,12 @@ When we introduced the type `BookInfo`, we deliberately chose to give the type c
 
 However, in Haskell, the names of types and values are independent of each other. We only use a type constructor (i.e. the type's name) in a type declaration or a type signature. We only use a value constructor in actual code. Because these uses are distinct, there is no ambiguity if we give a type constructor and a value constructor the same name. If we are writing a type signature, we must be referring to a type constructor. If we are writing an expression, we must be using the value constructor.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
-
-``` haskell
+```haskell
+-- File: src/Ch03/BookStore.hs
 -- We will introduce the CustomerID type shortly.
 
 data BookReview = BookReview BookInfo CustomerID String
 ```
-:::
 
 This definition says that the type named `BookReview` has a value constructor that is also named `BookReview`.
 
@@ -123,88 +117,81 @@ Not only is it *legal* for a value constructor to have the same name as its type
 
 ## Type synonyms
 
-We can introduce a *synonym* for an existing type at any time, to give a type a more descriptive name. For example, the `String` in our
-`BookReview` type doesn't tell us what the string is for, but we can clarify this.
+We can introduce a *synonym* for an existing type at any time, to give a type a more descriptive name. For example, the `String` in our `BookReview` type doesn't tell us what the string is for, but we can clarify this.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell type CustomerID = Int type ReviewBody = String
+type CustomerID = Int 
+type ReviewBody = String
 
 data BetterReview = BetterReview BookInfo CustomerID ReviewBody
 ```
-:::
 
 The `type` keyword introduces a type synonym. The new name is on the left of the `=`, with the existing name on the right. The two names identify the same type, so type synonyms are *purely* for making code more readable.
 
 We can also use a type synonym to create a shorter name for a verbose type.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell type BookRecord = (BookInfo, BookReview)
+type BookRecord = (BookInfo, BookReview)
 ```
-:::
 
-This states that we can use `BookRecord` as a synonym for the tuple
-`(BookInfo, BookReview)`. A type synonym only creates a new name that refers to an existing type[^1]. We still use the same value constructors to create a value of the type.
+This states that we can use `BookRecord` as a synonym for the tuple `(BookInfo, BookReview)`. A type synonym only creates a new name that refers to an existing type[^1]. We still use the same value constructors to create a value of the type.
 
 ## Algebraic data types
 
 The familiar `Bool` is the simplest common example of a category of type called an *algebraic data type*. An algebraic data type can have more than one value constructor.
 
-::: captioned-content
-::: caption Bool.hs
-:::
+```haskell
+-- File: src/Ch03/Bool.hs
 
-``` haskell data Bool = False | True
+data Bool = False | True
 ```
-:::
 
-The `Bool` type has two value constructors, `True` and `False`. Each value constructor is separated in the definition by a `|` character,
-which we can read as "or": we can construct a `Bool` that has the value `True`, or the value `False`. When a type has more than one value constructor, they are usually referred to as *alternatives* or *cases*.
-We can use any one of the alternatives to create a value of that type.
+The `Bool` type has two value constructors, `True` and `False`. Each value constructor is separated in the definition by a `|` character, which we can read as "or": we can construct a `Bool` that has the value `True`, or the value `False`. When a type has more than one value constructor, they are usually referred to as *alternatives* or *cases*. We can use any one of the alternatives to create a value of that type.
 
-::: NOTE A note about naming
-
-Although the phrase "algebraic data type" is long, we're being careful to avoid using the acronym "ADT". That acronym is already widely understood to stand for "*abstract* data type". Since Haskell supports both algebraic and abstract data types, we'll be explicit and avoid the acronym entirely.
-:::
+> ℹ️ **A note about naming**
+>
+> Although the phrase "algebraic data type" is long, we're being careful to avoid using the acronym "ADT". That acronym is already widely understood to stand for "*abstract* data type". Since Haskell supports both algebraic and abstract data types, we'll be explicit and avoid the acronym entirely.
 
 Each of an algebraic data type's value constructors can take zero or more arguments. As an example, here's one way we might represent billing information.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell type CardHolder = String type CardNumber = String type Address = [String]
+type CardHolder = String 
+type CardNumber = String 
+type Address = [String]
 
 data BillingInfo = CreditCard CardNumber CardHolder Address
                  | CashOnDelivery
                  | Invoice CustomerID
                    deriving (Show)
 ```
-:::
 
 Here, we're saying that we support three ways to bill our customers. If they want to pay by credit card, they must supply a card number, the holder's name, and the holder's billing address as arguments to the
-`CreditCard` value constructor. Alternatively, they can pay the person who delivers their shipment. Since we don't need to store any extra information about this, we specify no arguments for the `CashOnDelivery`
-constructor. Finally, we can send an invoice to the specified customer,
-in which case we need their CustomerID as an argument to the `Invoice`
-constructor.
+`CreditCard` value constructor. Alternatively, they can pay the person who delivers their shipment. Since we don't need to store any extra information about this, we specify no arguments for the `CashOnDelivery` constructor. Finally, we can send an invoice to the specified customer, in which case we need their CustomerID as an argument to the `Invoice` constructor.
 
-When we use a value constructor to create a value of type `BillingInfo`,
-we must supply the arguments that it requires.
+When we use a value constructor to create a value of type `BillingInfo`, we must supply the arguments that it requires.
 
-``` screen ghci> :type CreditCard CreditCard :: CardNumber -> CardHolder -> Address -> BillingInfo ghci> CreditCard "2901650221064486" "Thomas Gradgrind" ["Dickens", "England"]
+```screen
+ghci> :type CreditCard 
+CreditCard :: CardNumber -> CardHolder -> Address -> BillingInfo 
+ghci> CreditCard "2901650221064486" "Thomas Gradgrind" ["Dickens", "England"]
 CreditCard "2901650221064486" "Thomas Gradgrind" ["Dickens","England"]
-ghci> :type it it :: BillingInfo ghci> Invoice
+ghci> :type it 
+it :: BillingInfo 
+ghci> Invoice
 
 <interactive>:1:1: error:
     • No instance for (Show (CustomerID -> BillingInfo))
         arising from a use of ‘print’
         (maybe you haven't applied a function to enough arguments?)
-    • In a stmt of an interactive GHCi command: print it ghci> :type it it :: BillingInfo
+    • In a stmt of an interactive GHCi command: print it 
+ghci> :type it 
+it :: BillingInfo
 ```
 
 The `No instance` error message arose because we did not supply an argument to the `Invoice` constructor. As a result, we were trying to print the `Invoice` constructor itself. That constructor requires an argument and returns a value, so it is a function. We cannot print functions in Haskell, which is ultimately why the interpreter complained.
@@ -213,7 +200,8 @@ The `No instance` error message arose because we did not supply an argument to t
 
 There is some overlap between tuples and user-defined algebraic data types. If we wanted to, we could represent our `BookInfo` type from earlier as an `(Int, String, [String])` tuple.
 
-``` screen ghci> Book 2 "The Wealth of Networks" ["Yochai Benkler"]
+```screen
+ghci> Book 2 "The Wealth of Networks" ["Yochai Benkler"]
 Book 2 "The Wealth of Networks" ["Yochai Benkler"]
 ghci> (2, "The Wealth of Networks", ["Yochai Benkler"])
 (2,"The Wealth of Networks",["Yochai Benkler"])
@@ -221,37 +209,31 @@ ghci> (2, "The Wealth of Networks", ["Yochai Benkler"])
 
 Algebraic data types allow us to distinguish between otherwise identical pieces of information. Two tuples with elements of the same type are structurally identical, so they have the same type.
 
-::: captioned-content
-::: caption Distinction.hs
-:::
+```haskell
+-- File: src/Ch03/Distinction.hs
 
-``` haskell a = ("Porpoise", "Grey")
+a = ("Porpoise", "Grey")
 b = ("Table", "Oak")
 ```
-:::
 
 Since they have different names, two algebraic data types have distinct types, even if they are otherwise structurally equivalent.
 
-::: captioned-content
-::: caption Distinction.hs
-:::
-
-``` haskell data Cetacean = Cetacean String String data Furniture = Furniture String String
+```haskell
+-- File: src/Ch03/Distinction.hs
+data Cetacean = Cetacean String String 
+data Furniture = Furniture String String
 
 c = Cetacean "Porpoise" "Grey"
 d = Furniture "Table" "Oak"
 ```
-:::
 
 This lets us bring the type system to bear in writing programs with fewer bugs. With the tuples we defined above, we could conceivably pass a description of a whale to a function expecting a chair, and the type system could not help us. With the algebraic data types, there is no such possibility of confusion.
 
 Here is a more subtle example. Consider the following representations of a two-dimensional vector.
 
-::: captioned-content
-::: caption AlgebraicVector.hs
-:::
+```haskell
+-- File: src/Ch03/AlgebraicVector.hs
 
-``` haskell
 -- x and y coordinates or lengths.
 data Cartesian2D = Cartesian2D Double Double
                    deriving (Eq, Show)
@@ -260,13 +242,11 @@ data Cartesian2D = Cartesian2D Double Double
 data Polar2D = Polar2D Double Double
                deriving (Eq, Show)
 ```
-:::
 
-The cartesian and polar forms use the same types for their two elements.
-However, the *meanings* of the elements are different. Because
-`Cartesian2D` and `Polar2D` are distinct types, the type system will not let us accidentally use a `Cartesian2D` value where a `Polar2D` is expected, or vice versa.
+The cartesian and polar forms use the same types for their two elements. However, the *meanings* of the elements are different. Because `Cartesian2D` and `Polar2D` are distinct types, the type system will not let us accidentally use a `Cartesian2D` value where a `Polar2D` is expected, or vice versa.
 
-``` screen ghci> Cartesian2D (sqrt 2) (sqrt 2) == Polar2D (pi / 4) 2
+```screen
+ghci> Cartesian2D (sqrt 2) (sqrt 2) == Polar2D (pi / 4) 2
 
 <interactive>:2:34: error:
     • Couldn't match expected type ‘Cartesian2D’
@@ -280,14 +260,14 @@ However, the *meanings* of the elements are different. Because
 
 The `(==)` operator requires its arguments to have the same type.
 
-::: TIP Comparing for equality
-
-Notice that in the `deriving` clause for our vector types, we added another word, `Eq`. This causes the Haskell implementation to generate code that lets us compare the values for equality.
-:::
+> 💡 **Comparing for equality**
+>
+> Notice that in the `deriving` clause for our vector types, we added another word, `Eq`. This causes the Haskell implementation to generate code that lets us compare the values for equality.
 
 If we used tuples to represent these values, we could quickly land ourselves in hot water by mixing the two representations inappropriately.
 
-``` screen ghci> (1, 2) == (1, 2)
+```screen
+ghci> (1, 2) == (1, 2)
 True
 ```
 
@@ -299,197 +279,145 @@ There is no hard and fast rule for deciding when it's better to use a tuple or a
 
 Algebraic data types provide a single powerful way to describe data types. Other languages often need several different features to achieve the same degree of expressiveness. Here are some analogues from C and C++, which might make it clearer what we can do with algebraic data types, and how they relate to concepts that might be more familiar.
 
-1.  The structure
+#### The structure
 
-    With just one constructor, an algebraic data type is similar to a
-    tuple: it groups related values together into a compound value. It
-    corresponds to a `struct` in C or C++, and its components correspond
-    to the fields of a `struct`. Here's a C equivalent of the
-    `BookInfo` type that we defined earlier.
+With just one constructor, an algebraic data type is similar to a tuple: it groups related values together into a compound value. It corresponds to a `struct` in C or C++, and its components correspond to the fields of a `struct`. Here's a C equivalent of the `BookInfo` type that we defined earlier.
 
-    ``` {.c org-language="C"}
-    struct book_info {
-        int id;
-        char *name;
-        char **authors;
-    };
-    ```
+```c
+struct book_info {
+    int id;
+    char *name;
+    char **authors;
+};
+```
 
-    The main difference between the two is that the fields in the
-    Haskell type are anonymous and positional.
+The main difference between the two is that the fields in the Haskell type are anonymous and positional.
 
-    ::: captioned-content
-    ::: caption
-    BookStore.hs
-    :::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-    ``` haskell
-    data BookInfo = Book Int String [String]
-                    deriving (Show)
-    ```
-    :::
+data BookInfo = Book Int String [String]
+                deriving (Show)
+```
 
-    By *positional*, we mean that the section number is in the first
-    field of the Haskell type, and the title is in the second. We refer
-    to them by location, not by name.
+By *positional*, we mean that the section number is in the first field of the Haskell type, and the title is in the second. We refer to them by location, not by name.
 
-    In [the section called "Pattern
-    matching"](3-defining-types-streamlining-functions.org::*Pattern matching)
-    the fields of a `BookStore` value. In [the section called "Record
-    syntax"](3-defining-types-streamlining-functions.org::*Record syntax)
-    syntax for defining data types that looks a little more C-like.
+In the section called ["Pattern matching"](#pattern-matching), we'll see how to access the fields of a `BookStore` value. In the section called ["Record syntax"](#record-syntax), we'll introduce an alternate syntax for defining data types that looks a little more C-like.
 
-2.  The enumeration
+#### The enumeration
 
-    Algebraic data types also serve where we'd use an `enum` in C or
-    C++, to represent a range of symbolic values. Such algebraic data
-    types are sometimes referred to as enumeration types. Here's an
-    example from C.
+Algebraic data types also serve where we'd use an `enum` in C or C++, to represent a range of symbolic values. Such algebraic data types are sometimes referred to as enumeration types. Here's an example from C.
 
-    ``` {.c org-language="C"}
-    enum roygbiv {
-        red,
-        orange,
-        yellow,
-        green,
-        blue,
-        indigo,
-        violet,
-    };
-    ```
+```c
+enum roygbiv {
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    indigo,
+    violet,
+};
+```
 
-    And here's a Haskell equivalent.
+And here's a Haskell equivalent.
 
-    ::: captioned-content
-    ::: caption
-    Roygbiv.hs
-    :::
+```haskell
+-- File: src/Ch03/Roygbiv.hs
 
-    ``` haskell
-    data Roygbiv = Red
-                 | Orange
-                 | Yellow
-                 | Green
-                 | Blue
-                 | Indigo
-                 | Violet
-                   deriving (Eq, Show)
-    ```
-    :::
+data Roygbiv = Red
+             | Orange
+             | Yellow
+             | Green
+             | Blue
+             | Indigo
+             | Violet
+             deriving (Eq, Show)
+```
 
-    We can try these out in `ghci`.
+We can try these out in `ghci`.
 
-    ``` screen
-    ghci> :type Yellow
-    Yellow :: Roygbiv
-    ghci> :type Red
-    Red :: Roygbiv
-    ghci> Red == Yellow
-    False
-    ghci> Green == Green
-    True
-    ```
+```screen
+ghci> :type Yellow
+Yellow :: Roygbiv
+ghci> :type Red
+Red :: Roygbiv
+ghci> Red == Yellow
+False
+ghci> Green == Green
+True
+```
 
-    In C, the elements of an `enum` are integers. We can use an integer
-    in a context where an `enum` is expected, and vice versa: a C
-    compiler will automatically convert values between the two types.
-    This can be a source of nasty bugs. In Haskell, this kind of problem
-    does not occur. For example, we cannot use a `Roygbiv` value where
-    an `Int` is expected.
+In C, the elements of an `enum` are integers. We can use an integer in a context where an `enum` is expected, and vice versa: a C compiler will automatically convert values between the two types. This can be a source of nasty bugs. In Haskell, this kind of problem does not occur. For example, we cannot use a `Roygbiv` value where an `Int` is expected.
 
-    ``` screen
-    ghci> take 3 "foobar"
-    "foo"
-    ghci> take Red "foobar"
+```screen
+ghci> take 3 "foobar"
+"foo"
+ghci> take Red "foobar"
 
-    <interactive>:3:6: error:
-        • Couldn't match expected type ‘Int’ with actual type ‘Roygbiv’
-        • In the first argument of ‘take’, namely ‘Red’
-          In the expression: take Red "foobar"
-          In an equation for ‘it’: it = take Red "foobar"
-    ```
+<interactive>:3:6: error:
+    • Couldn't match expected type ‘Int’ with actual type ‘Roygbiv’
+    • In the first argument of ‘take’, namely ‘Red’
+      In the expression: take Red "foobar"
+      In an equation for ‘it’: it = take Red "foobar"
+```
 
-3.  The discriminated union
+#### The discriminated union
 
-    If an algebraic data type has multiple alternatives, we can think of
-    it as similar to a `union` in C or C++. A big difference between the
-    two is that a union doesn't tell us which alternative is actually
-    present; we have to explicitly and manually track which alternative
-    we're using, usually in another field of an enclosing struct. This
-    means that unions can be sources of nasty bugs, where our notion of
-    which alternative we should be using is incorrect.
+If an algebraic data type has multiple alternatives, we can think of it as similar to a `union` in C or C++. A big difference between the two is that a union doesn't tell us which alternative is actually present; we have to explicitly and manually track which alternative we're using, usually in another field of an enclosing struct. This means that unions can be sources of nasty bugs, where our notion of which alternative we should be using is incorrect.
 
-    ``` {.c org-language="C"}
-    enum shape_type {
-        shape_circle,
-        shape_poly,
-    };
-    
-    struct circle {
-        struct vector centre;
-        float radius;
-    };
-    
-    struct poly {
-        size_t num_vertices;
-        struct vector *vertices;
-    };
-    
-    struct shape
-    {
-        enum shape_type type;
-        union {
-        struct circle circle;
-        struct poly poly;
-        } shape;
-    };
-    ```
+```c
+enum shape_type {
+    shape_circle,
+    shape_poly,
+};
 
-    In the example above, the `union` can contain valid data for either
-    a `struct circle` or a `struct poly`. We have to use the
-    `enum shape_type` by hand to indicate which kind of value is
-    currently stored in the `union`.
+struct circle {
+    struct vector centre;
+    float radius;
+};
 
-    The Haskell version of this code is both dramatically shorter and
-    safer than the C equivalent.
+struct poly {
+    size_t num_vertices;
+    struct vector *vertices;
+};
 
-    ::: captioned-content
-    ::: caption
-    ShapeUnion.hs
-    :::
+struct shape
+{
+    enum shape_type type;
+    union {
+    struct circle circle;
+    struct poly poly;
+    } shape;
+};
+```
 
-    ``` haskell
-    type Vector = (Double, Double)
-    
-    data Shape = Circle Vector Double
-               | Poly [Vector]
-    ```
-    :::
+In the example above, the `union` can contain valid data for either a `struct circle` or a `struct poly`. We have to use the `enum shape_type` by hand to indicate which kind of value is currently stored in the `union`.
 
-    If we create a `Shape` value using the `Circle` constructor, the
-    fact that we created a `Circle` is stored. When we later use a
-    `Circle`, we can't accidentally treat it as a `Square`. We will see
-    why in [the section called "Pattern
-    matching"](3-defining-types-streamlining-functions.org::*Pattern matching)
+The Haskell version of this code is both dramatically shorter and safer than the C equivalent.
 
-    ::: TIP
-    A few notes
+```haskell
+-- File: src/Ch03/ShapeUnion.hs
 
-    From reading the preceding sections, it should now be clear that
-    *all* of the data types that we define with the `data` keyword are
-    algebraic data types. Some may have just one alternative, while
-    others have several, but they're all using the same machinery.
-    :::
+type Vector = (Double, Double)
 
-## Pattern matching
+data Shape = Circle Vector Double
+           | Poly [Vector]
+```
+
+If we create a `Shape` value using the `Circle` constructor, the fact that we created a `Circle` is stored. When we later use a `Circle`, we can't accidentally treat it as a `Square`. We will see why in the section called ["Pattern matching"](#pattern-matching)
+
+> 💡 **A few notes**
+>
+> From reading the preceding sections, it should now be clear that *all* of the data types that we define with the `data` keyword are algebraic data types. Some may have just one alternative, while others have several, but they're all using the same machinery.
+
+## <span id="pattern-matching">Pattern matching</span>
 
 Now that we've seen how to construct values with algebraic data types,
 let's discuss how we work with these values. If we have a value of some type, there are two things we would like to be able to do.
 
--   If the type has more than one value constructor, we need to be able
-    to tell which value constructor was used to create the value.
--   If the value constructor has data components, we need to be able to
-    extract those values.
+- If the type has more than one value constructor, we need to be able to tell which value constructor was used to create the value.
+- If the value constructor has data components, we need to be able to extract those values.
 
 Haskell has a simple, but tremendously useful, *pattern matching*
 facility that lets us do both of these things.
@@ -503,6 +431,7 @@ value: we're going to reproduce the `not` function.
 
 ``` haskell myNot True  = False myNot False = True
 ```
+
 :::
 
 It might seem that we have two functions named `myNot` here, but Haskell lets us define a function as a *series of equations*: these two clauses are defining the behavior of the same function for different patterns of input. On each line, the patterns are the items following the function name, up until the `=` sign.
@@ -520,6 +449,7 @@ Here is a slightly more extended example. This function adds together the elemen
 
 ``` haskell sumList (x:xs) = x + sumList xs sumList []     = 0
 ```
+
 :::
 
 Let us step through the evaluation of `sumList [1,2]`. The list notation
@@ -555,11 +485,11 @@ When we pattern match against the `Book` constructor, we *reverse* the construct
 Let's consider what happens if we match the pattern
 `(Book id name authors)` against our example expression.
 
--   The match will succeed, because the constructor in the value matches
+- The match will succeed, because the constructor in the value matches
     the one in our pattern.
--   The variable `id` will be bound to `9`.
--   The variable `name` will be bound to `"Close Calls"`.
--   The variable `authors` will be bound to `["John Long"]`.
+- The variable `id` will be bound to `9`.
+- The variable `name` will be bound to `"Close Calls"`.
+- The variable `authors` will be bound to `["John Long"]`.
 
 Because pattern matching acts as the inverse of construction, it's sometimes referred to as /de/construction.
 
@@ -578,6 +508,7 @@ The syntax for pattern matching on a tuple is similar to the syntax for construc
 
 ``` haskell third (a, b, c) = c
 ```
+
 :::
 
 There's no limit on how "deep" within a value a pattern can look.
@@ -589,6 +520,7 @@ This definition looks both inside a tuple and inside a list within that tuple.
 
 ``` haskell complicated (True, a, x:xs, 5) = (a, xs)
 ```
+
 :::
 
 We can try this out interactively.
@@ -616,6 +548,7 @@ We can pattern match on an algebraic data type using its value constructors. Rec
 
 ``` haskell bookID      (Book id title authors) = id bookTitle   (Book id title authors) = title bookAuthors (Book id title authors) = authors
 ```
+
 :::
 
 Let's see it in action.
@@ -653,6 +586,7 @@ which we call a *wild card*. We use it as follows.
 
 ``` haskell nicerID      (Book id _     _      ) = id nicerTitle   (Book _  title _      ) = title nicerAuthors (Book _  _     authors) = authors
 ```
+
 :::
 
 Here, we have tidier versions of the accessor functions we introduced earlier. Now, there's no question about which element we're using in each function.
@@ -675,6 +609,7 @@ Let's see what happens if we fail to cover all the cases. Here, we deliberately 
 
 ``` haskell badExample (x:xs) = x + badExample xs
 ```
+
 :::
 
 If we apply this to a value that it cannot match, we'll get an error at runtime: our software has a bug!
@@ -699,6 +634,7 @@ If we need to provide a default behavior in cases where we don't care about spec
 
 ``` haskell goodExample (x:xs) = x + goodExample xs goodExample _      = 0
 ```
+
 :::
 
 The wild card above will match the `[]` constructor, so applying this function does not lead to a crash.
@@ -709,7 +645,7 @@ ghci> goodExample [1,2]
 3
 ```
 
-## Record syntax
+## <span id="record-syntax">Record syntax</span>
 
 Writing accessor functions for each of a data type's components can be repetitive and tedious.
 
@@ -719,6 +655,7 @@ Writing accessor functions for each of a data type's components can be repetitiv
 
 ``` haskell nicerID      (Book id _     _      ) = id nicerTitle   (Book _  title _      ) = title nicerAuthors (Book _  _     authors) = authors
 ```
+
 :::
 
 We call this kind of code *boilerplate*: necessary, but bulky and irksome. Haskell programmers don't like boilerplate. Fortunately, the language addresses this particular boilerplate problem: we can define a data type, and accessors for each of its components, simultaneously.
@@ -734,6 +671,7 @@ We call this kind of code *boilerplate*: necessary, but bulky and irksome. Haske
     , customerAddress :: Address
     } deriving (Show)
 ```
+
 :::
 
 This is almost exactly identical in meaning to the following, more familiar form.
@@ -752,6 +690,7 @@ customerName :: Customer -> String customerName (Customer _ name _) = name
 customerAddress :: Customer -> [String]
 customerAddress (Customer _ _ address) = address
 ```
+
 :::
 
 For each of the fields that we name in our type definition, Haskell creates an accessor function of that name.
@@ -770,6 +709,7 @@ We can still use the usual application syntax to create a value of this type.
              "Milpitas, CA 95134",
              "USA"]
 ```
+
 :::
 
 Record syntax adds a more verbose notation for creating a value. This can sometimes make code more readable.
@@ -786,6 +726,7 @@ Record syntax adds a more verbose notation for creating a value. This can someti
             , customerName = "Jane Q. Citizen"
             }
 ```
+
 :::
 
 If we use this form, we can vary the order in which we list fields.
@@ -837,6 +778,7 @@ We've repeatedly mentioned that the list type is polymorphic: the elements of a 
 ``` haskell data Maybe a = Just a
              | Nothing
 ```
+
 :::
 
 Here, the variable `a` is not a regular variable: it's a type variable.
@@ -851,6 +793,7 @@ This lets us use Maybe on values of any type.
 
 someString = Just "something"
 ```
+
 :::
 
 As usual, we can experiment with this type in `ghci`.
@@ -872,6 +815,7 @@ We can nest uses of parameterised types inside each other, but when we do, we ma
 
 ``` haskell wrapped = Just (Just "wrapped")
 ```
+
 :::
 
 To once again extend an analogy to more familiar languages,
@@ -928,6 +872,7 @@ We can easily prove to ourselves that our `List a` type has the same shape as th
 ``` haskell fromList (x:xs) = Cons x (fromList xs)
 fromList []     = Nil
 ```
+
 :::
 
 By inspection, this clearly substitutes a `Cons` for every `(:)`, and a
@@ -938,6 +883,7 @@ Cons 'd' (Cons 'u' (Cons 'r' (Cons 'i' (Cons 'a' (Cons 'n' Nil)))))
 ghci> fromList [Just True, Nothing, Just False]
 Cons (Just True) (Cons Nothing (Cons (Just False) Nil))
 ```
+
 :::
 
 For a third example of what a recursive type is, here is a definition of a binary tree type.
@@ -950,6 +896,7 @@ For a third example of what a recursive type is, here is a definition of a binar
             | Empty
               deriving (Show)
 ```
+
 :::
 
 A binary tree is either a node with two children, which are themselves binary trees, or an empty value.
@@ -998,13 +945,14 @@ constructor, we supply `Empty` in Haskell.
 ``` haskell simpleTree = Node "parent" (Node "left child" Empty Empty)
                            (Node "right child" Empty Empty)
 ```
+
 :::
 
 ### Exercises
 
-1.  Write the converse of `fromList` for the List type: a function that
+1. Write the converse of `fromList` for the List type: a function that
     takes a List a and generates a `[a]`.
-2.  Define a tree type that has only one constructor, like our Java
+2. Define a tree type that has only one constructor, like our Java
     example. Instead of the `Empty` constructor, use the `Maybe` type to
     refer to a node's children.
 
@@ -1028,6 +976,7 @@ mySecond xs = if null (tail xs)
               then error "list too short"
               else head (tail xs)
 ```
+
 :::
 
 As usual, we can see how this works in practice in `ghci`.
@@ -1068,6 +1017,7 @@ safeSecond [] = Nothing safeSecond xs = if null (tail xs)
                 then Nothing
                 else Just (head (tail xs))
 ```
+
 :::
 
 If the list we're passed is too short, we return `Nothing` to our caller. This lets them decide what to do, where a call to `error` would force a crash.
@@ -1090,6 +1040,7 @@ To return to an earlier topic, we can further improve the readability of this fu
 
 tidySecond (_:x:_) = Just x tidySecond _       = Nothing
 ```
+
 :::
 
 The first pattern only matches if the list is at least two elements long
@@ -1109,6 +1060,7 @@ Within the body of a function, we can introduce new local variables whenever we 
                          then Nothing
                          else Just newBalance
 ```
+
 :::
 
 The keywords to look out for here are `let`, which starts a block of variable declarations, and `in`, which ends it. Each line introduces a new variable. The name is on the left of the `=`, and the expression to which it is bound is on the right.
@@ -1143,6 +1095,7 @@ We can "nest" multiple `let` blocks inside each other in an expression.
       in let b = 2
          in a + b
 ```
+
 :::
 
 It's perfectly legal, but not exactly wise, to repeat a variable name in a nested `let` expression.
@@ -1154,6 +1107,7 @@ It's perfectly legal, but not exactly wise, to repeat a variable name in a neste
 ``` haskell bar = let x = 1
       in ((let x = "foo" in x), x)
 ```
+
 :::
 
 Here, the inner `x` is hiding, or *shadowing*, the outer `x`. It has the same name, but a different type and value.
@@ -1171,6 +1125,7 @@ We can also shadow a function's parameters, leading to even stranger results. Wh
 ``` haskell quux a = let a = "foo"
          in a ++ "eek!"
 ```
+
 :::
 
 Because the function's argument `a` is never used in the body of the function, due to being shadowed by the `let`-bound `a`, the argument can have any type at all.
@@ -1200,6 +1155,7 @@ instead of `let`.
     where reserve    = 100
           newBalance = balance - amount
 ```
+
 :::
 
 While a `where` clause may initially seem weird, it offers a wonderful aid to readability. It lets us direct our reader's focus to the important details of an expression, with the supporting definitions following afterwards. After a while, you may find yourself missing
@@ -1223,6 +1179,7 @@ pluralise word counts = map plural counts
           plural 1 = "one " ++ word
           plural n = show n ++ " " ++ word ++ "s"
 ```
+
 :::
 
 We have defined a local function, `plural`, that consists of several equations. Local functions can freely use variables from the scopes that enclose them: here, we use `word` from the definition of the outer function `pluralise`. In the definition of `pluralise`, the `map`
@@ -1236,6 +1193,7 @@ We can also define variables, as well as functions, at the top level of a source
 
 ``` haskell itemName = "Weighted Companion Cube"
 ```
+
 :::
 
 ## The offside rule and white space in an expression
@@ -1260,6 +1218,7 @@ Here's an illustration of the top level indentation rule. Our first file, `GoodI
   -- ...provided all subsequent declarations do, too!
   secondGoodIndentation = 2
 ```
+
 :::
 
 Our second, `BadIndent.hs`, doesn't play by the rules.
@@ -1277,6 +1236,7 @@ Our second, `BadIndent.hs`, doesn't play by the rules.
   -- Our second is left of the first, which is illegal!
   secondBadIndentation = 2
 ```
+
 :::
 
 Here's what happens when we try to load the two files into `ghci`.
@@ -1313,6 +1273,7 @@ The rules for `let` expressions and `where` clauses are similar. After a
                              continuation yada
       in whatever
 ```
+
 :::
 
 Here are nested uses of `let` and `where`.
@@ -1326,6 +1287,7 @@ Here are nested uses of `let` and `where`.
       in let a = b
          in (a, c)
 ```
+
 :::
 
 The name `a` is only visible within the inner `let` expression. It's not visible in the outer `let`. If we try to use the name `a` there,
@@ -1339,6 +1301,7 @@ we'll get a compilation error. The indentation gives both us and the compiler a 
     where x = y
               where y = 2
 ```
+
 :::
 
 Similarly, the scope of the first `where` clause is the definition of
@@ -1362,6 +1325,7 @@ If you like tabs you can use them as long as you correctly align expressions. Fo
     b = 2
     in a + b
 ```
+
 :::
 
 We need the amount of characters before the `a` to be equal to eight or the `b` won't be aligned and won't compile. Totally impracticall. It is better to break the expressions as below.
@@ -1375,6 +1339,7 @@ We need the amount of characters before the `a` to be equal to eight or the `b` 
         b = 2
     in a + b
 ```
+
 :::
 
 As long as you correctly align expressions you can even [mix spaces and tabs](http://dmwit.com/tabs/).
@@ -1396,6 +1361,7 @@ foo = let { a = 1;  b = 2;
         c = 3 }
       in a + b + c
 ```
+
 :::
 
 When we use explicit structuring, the normal layout rules don't apply,
@@ -1420,6 +1386,7 @@ Function definitions are not the only place where we can use pattern matching. T
       Nothing     -> defval
       Just value  -> value
 ```
+
 :::
 
 The `case` keyword is followed by an arbitrary expression: the pattern match is performed against the result of this expression. The `of`
@@ -1451,6 +1418,7 @@ whichFruit :: String -> Fruit whichFruit f = case f of
                  apple  -> Apple
                  orange -> Orange
 ```
+
 :::
 
 A naive glance suggests that this code is trying to check the value `f`
@@ -1464,6 +1432,7 @@ It is easier to spot the mistake if we rewrite the code in an equational style.
 
 ``` haskell equational apple = Apple equational orange = Orange
 ```
+
 :::
 
 Now can you see the problem? Here, it is more obvious `apple` does not refer to the top level value named `apple`: it is a local pattern variable.
@@ -1483,6 +1452,7 @@ Here's a corrected version of this function.
                   "apple"  -> Apple
                   "orange" -> Orange
 ```
+
 :::
 
 We fixed the problem by matching against the literal values `"apple"`
@@ -1499,6 +1469,7 @@ and return one of them if they're equal? Here's an attempt.
 
 ``` haskell bad_nodesAreSame (Node a _ _) (Node a _ _) = Just a bad_nodesAreSame _            _            = Nothing
 ```
+
 :::
 
 A name can only appear once in a set of pattern bindings. We cannot place a variable in multiple positions to express the notion "this value and that should be identical". Instead, we'll solve this problem using *guards*, another invaluable Haskell feature.
@@ -1514,6 +1485,7 @@ Pattern matching limites us to performing fixed tests of a value's shape. Althou
 ``` haskell nodesAreSame (Node a _ _) (Node b _ _)
     | a == b     = Just a nodesAreSame _ _ = Nothing
 ```
+
 :::
 
 In this example, we use pattern matching to ensure that we are looking at values of the right shape, and a guard to compare pieces of them.
@@ -1538,6 +1510,7 @@ Here is a reworked version of our `lend` function that uses guards.
     where reserve    = 100
           newBalance = balance - amount
 ```
+
 :::
 
 The special-looking guard expression `otherwise` is simply a variable bound to the value `True`, to aid readability.
@@ -1552,6 +1525,7 @@ We can use guards anywhere that we can use patterns. Writing a function as a ser
               then xs
               else myDrop (n - 1) (tail xs)
 ```
+
 :::
 
 Here is a reformulation that uses patterns and guards.
@@ -1563,30 +1537,31 @@ Here is a reformulation that uses patterns and guards.
 ``` haskell niceDrop n xs | n <= 0 = xs niceDrop _ []          = []
 niceDrop n (_:xs)      = niceDrop (n - 1) xs
 ```
+
 :::
 
 This change in style lets us enumerate *up front* the cases in which we expect a function to behave differently. If we bury the decisions inside a function as `if` expressions, the code becomes harder to read.
 
 ## Exercises
 
-1.  Write a function that computes the number of elements in a list. To
+1. Write a function that computes the number of elements in a list. To
     test it, ensure that it gives the same answers as the standard
     `length` function.
-2.  Add a type signature for your function to your source file. To test
+2. Add a type signature for your function to your source file. To test
     it, load the source file into `ghci` again.
-3.  Write a function that computes the mean of a list, i.e. the sum of
+3. Write a function that computes the mean of a list, i.e. the sum of
     all elements in the list divided by its length. (You may need to use
     the `fromIntegral` function to convert the length of the list from
     an integer into a floating point number).
-4.  Turn a list into a palindrome, i.e. it should read the same both
+4. Turn a list into a palindrome, i.e. it should read the same both
     backwards and forwards. For example, given the list `[1,2,3]`, your
     function should return `[1,2,3,3,2,1]`.
-5.  Write a function that determines whether its input list is a
+5. Write a function that determines whether its input list is a
     palindrome.
-6.  Create a function that sorts a list of lists based on the length of
+6. Create a function that sorts a list of lists based on the length of
     each sublist. (You may want to look at the `sortBy` function from
     the `Data.List` module.)
-7.  Define a function that joins a list of lists together using a
+7. Define a function that joins a list of lists together using a
     separator value:
 
 ::: captioned-content
@@ -1595,6 +1570,7 @@ This change in style lets us enumerate *up front* the cases in which we expect a
 
 ``` haskell intersperse :: a -> [[a]] -> [a]
 ```
+
 :::
 
 The separator should appear between elements of the list, but should not follow the last element. Your function should behave as follows.
@@ -1610,25 +1586,25 @@ ghci> intersperse ',' ["foo","bar","baz","quux"]
 "foo,bar,baz,quux"
 ```
 
-1.  Using the binary tree type that we defined earlier in this chapter,
+1. Using the binary tree type that we defined earlier in this chapter,
     write a function that will determine the height of the tree. The
     height is the largest number of hops from the root to an `Empty`.
     For example, the tree `Empty` has height zero;
     `Node "x" Empty Empty` has height one;
     `Node "x" Empty (Node "y" Empty Empty)` has height two; and so on.
-2.  Consider three two-dimensional points *a*, *b*, and *c*. If we look
+2. Consider three two-dimensional points *a*, *b*, and *c*. If we look
     at the angle formed by the line segment from *a* to *b* and the line
     segment from *b* to *c*, it either turns left, turns right, or forms
     a straight line. Define a `Direction` data type that lets you
     represent these possibilities.
-3.  Write a function that calculates the turn made by three 2D points
+3. Write a function that calculates the turn made by three 2D points
     and returns a Direction.
-4.  Define a function that takes a list of 2D points and computes the
+4. Define a function that takes a list of 2D points and computes the
     direction of each successive triple. Given a list of points
     `[a,b,c,d,e]`, it should begin by computing the turn made by
     `[a,b,c]`, then the turn made by `[b,c,d]`, then `[c,d,e]`. Your
     function should return a list of `Direction`.
-5.  Using the code from the preceding three exercises, implement
+5. Using the code from the preceding three exercises, implement
     Graham's scan algorithm for the convex hull of a set of 2D points.
     You can find good description of what a [convex
     hull](http://en.wikipedia.org/wiki/Convex_hull) is, and how the
