@@ -31,11 +31,16 @@ library
       Ch02.MyDrop
       Ch02.RoundToEven
       Ch02.ShortCircuit
+      Ch03.Add
       Ch03.AlgebraicVector
+      Ch03.AltCustomer
+      Ch03.BadPattern
       Ch03.BookStore
       Ch03.Distinction
+      Ch03.Nullable
       Ch03.Roygbiv
       Ch03.ShapeUnion
+      Ch03.Tuple
       Lib
   other-modules:
       Paths_real_world_haskell_updated

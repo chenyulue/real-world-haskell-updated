@@ -413,48 +413,38 @@ If we create a `Shape` value using the `Circle` constructor, the fact that we cr
 
 ## <span id="pattern-matching">Pattern matching</span>
 
-Now that we've seen how to construct values with algebraic data types,
-let's discuss how we work with these values. If we have a value of some type, there are two things we would like to be able to do.
+Now that we've seen how to construct values with algebraic data types, let's discuss how we work with these values. If we have a value of some type, there are two things we would like to be able to do.
 
 - If the type has more than one value constructor, we need to be able to tell which value constructor was used to create the value.
 - If the value constructor has data components, we need to be able to extract those values.
 
-Haskell has a simple, but tremendously useful, *pattern matching*
-facility that lets us do both of these things.
+Haskell has a simple, but tremendously useful, *pattern matching* facility that lets us do both of these things.
 
-A pattern lets us look inside a value and bind variables to the data it contains. Here's an example of pattern matching in action on a `Bool`
-value: we're going to reproduce the `not` function.
+A pattern lets us look inside a value and bind variables to the data it contains. Here's an example of pattern matching in action on a `Bool` value: we're going to reproduce the `not` function.
 
-::: captioned-content
-::: caption MyNot.hs
-:::
+```haskell
+-- File: src/Ch03/Add.hs
 
-``` haskell myNot True  = False myNot False = True
+myNot True  = False 
+myNot False = True
 ```
-
-:::
 
 It might seem that we have two functions named `myNot` here, but Haskell lets us define a function as a *series of equations*: these two clauses are defining the behavior of the same function for different patterns of input. On each line, the patterns are the items following the function name, up until the `=` sign.
 
 To understand how pattern matching works, let's step through an example, say `myNot False`.
 
-When we apply `myNot`, the Haskell runtime checks the value we supply against the value constructor in the first pattern. This does not match,
-so it tries against the second pattern. That match succeeds, so it uses the right hand side of that equation as the result of the function application.
+When we apply `myNot`, the Haskell runtime checks the value we supply against the value constructor in the first pattern. This does not match, so it tries against the second pattern. That match succeeds, so it uses the right hand side of that equation as the result of the function application.
 
 Here is a slightly more extended example. This function adds together the elements of a list.
 
-::: captioned-content
-::: caption SumList.hs
-:::
+```haskell
+-- File: src/Ch03/Add.hs
 
-``` haskell sumList (x:xs) = x + sumList xs sumList []     = 0
+sumList (x:xs) = x + sumList xs 
+sumList []     = 0
 ```
 
-:::
-
-Let us step through the evaluation of `sumList [1,2]`. The list notation
-`[1,2]` is shorthand for the expression `(1 : (2 : []))`. We begin by trying to match the pattern in the first equation of the definition of
-`sumList`. In the `(x : xs)` pattern, the "`:`" is the familiar list constructor, `(:)`. We are now using it to match against a value, not to construct one. The value `(1 : (2 : []))` was constructed with `(:)`, so the constructor in the value matches the constructor in the pattern. We say that the pattern *matches*, or that the match *succeeds*.
+Let us step through the evaluation of `sumList [1,2]`. The list notation `[1,2]` is shorthand for the expression `(1 : (2 : []))`. We begin by trying to match the pattern in the first equation of the definition of `sumList`. In the `(x : xs)` pattern, the "`:`" is the familiar list constructor, `(:)`. We are now using it to match against a value, not to construct one. The value `(1 : (2 : []))` was constructed with `(:)`, so the constructor in the value matches the constructor in the pattern. We say that the pattern *matches*, or that the match *succeeds*.
 
 The variables `x` and `xs` are now "bound to" the constructor's arguments, so `x` is given the value `1`, and `xs` the value `2 : []`.
 
@@ -464,12 +454,9 @@ We are now evaluating `1 + (2 + sumList [])`. In this recursive application of `
 
 The result of `sumList [1,2]` is thus `1 + (2 + (0))`, or `3`.
 
-::: NOTE Ordering is important
-
-As we have already mentioned, a Haskell implementation checks patterns for matches in the order in which we specify them in our equations.
-Matching proceeds from top to bottom, and stops at the first success.
-Equations below a successful match have no effect.
-:::
+> ℹ️ **Ordering is important**
+>
+> As we have already mentioned, a Haskell implementation checks patterns for matches in the order in which we specify them in our equations. Matching proceeds from top to bottom, and stops at the first success. Equations below a successful match have no effect.
 
 As a final note, there already exists a standard function, `sum`, that performs this sum-of-a-list for us. Our `sumList` is purely for illustration.
 
@@ -477,56 +464,46 @@ As a final note, there already exists a standard function, `sum`, that performs 
 
 Let's step back and take a look at the relationship between constructing a value and pattern matching on it.
 
-We apply a value constructor to build a value. The expression
-`Book 9 "Close Calls" ["John Long"]` applies the `Book` constructor to the values `9`, `"Close Calls"`, and `["John Long"]` to produce a new value of type `BookInfo`.
+We apply a value constructor to build a value. The expression `Book 9 "Close Calls" ["John Long"]` applies the `Book` constructor to the values `9`, `"Close Calls"`, and `["John Long"]` to produce a new value of type `BookInfo`.
 
 When we pattern match against the `Book` constructor, we *reverse* the construction process. First of all, we check to see if the value was created using that constructor. If it was, we inspect it to obtain the individual values that we originally supplied to the constructor when we created the value.
 
-Let's consider what happens if we match the pattern
-`(Book id name authors)` against our example expression.
+Let's consider what happens if we match the pattern `(Book id name authors)` against our example expression.
 
-- The match will succeed, because the constructor in the value matches
-    the one in our pattern.
+- The match will succeed, because the constructor in the value matches the one in our pattern.
 - The variable `id` will be bound to `9`.
 - The variable `name` will be bound to `"Close Calls"`.
 - The variable `authors` will be bound to `["John Long"]`.
 
-Because pattern matching acts as the inverse of construction, it's sometimes referred to as /de/construction.
+Because pattern matching acts as the inverse of construction, it's sometimes referred to as *de*construction.
 
-::: NOTE Deconstruction doesn't destroy anything
-
-If you're steeped in object oriented programming jargon, don't confuse deconstruction with destruction! Matching a pattern has no effect on the value we're examining: it just lets us "look inside" it.
-:::
+> ℹ️ **Deconstruction doesn't destroy anything**
+>
+> If you're steeped in object oriented programming jargon, don't confuse deconstruction with destruction! Matching a pattern has no effect on the value we're examining: it just lets us "look inside" it.
 
 ### Further adventures
 
 The syntax for pattern matching on a tuple is similar to the syntax for constructing a tuple. Here's a function that returns the last element of a 3-tuple.
 
-::: captioned-content
-::: caption Tuple.hs
-:::
+```haskell
+-- File: src/Ch03/Tuple.hs
 
-``` haskell third (a, b, c) = c
+third (a, b, c) = c
 ```
 
-:::
+There's no limit on how "deep" within a value a pattern can look. This definition looks both inside a tuple and inside a list within that tuple.
 
-There's no limit on how "deep" within a value a pattern can look.
-This definition looks both inside a tuple and inside a list within that tuple.
+```haskell
+-- File: src/Ch03/Tuple.hs
 
-::: captioned-content
-::: caption Tuple.hs
-:::
-
-``` haskell complicated (True, a, x:xs, 5) = (a, xs)
+complicated (True, a, x:xs, 5) = (a, xs)
 ```
-
-:::
 
 We can try this out interactively.
 
-``` screen ghci> :load Tuple.hs
-[1 of 1] Compiling Main             ( Tuple.hs, interpreted )
+```screen
+ghci> :load Tuple.hs
+[1 of 1] Compiling Ch03.Tuple       ( Tuple.hs, interpreted )
 Ok, one module loaded.
 ghci> complicated (True, 1, [1,2,3], 5)
 (1,[2,3])
@@ -534,26 +511,27 @@ ghci> complicated (True, 1, [1,2,3], 5)
 
 Wherever a literal value is present in a pattern (`True` and `5` in the tuple pattern above), that value must match exactly for the pattern match to succeed. If every pattern within a series of equations fails to match, we get a runtime error.
 
-``` screen ghci> complicated (False, 1, [1,2,3], 5)
-*** Exception: Tuple.hs:10:0-39: Non-exhaustive patterns in function complicated
+```screen
+ghci> complicated (False, 1, [1,2,3], 5)
+*** Exception: Tuple.hs:10:1-40: Non-exhaustive patterns in function complicated
 ```
 
-For an explanation of this error message, skip forward a little, to [the section called "Exhaustive patterns and wild cards"](3-defining-types-streamlining-functions.org::*Exhaustive patterns and wild cards)
+For an explanation of this error message, skip forward a little, to the section called ["Exhaustive patterns and wild cards"](#exhaustive-patterns-wild-cards)
 
 We can pattern match on an algebraic data type using its value constructors. Recall the `BookInfo` type we defined earlier: we can extract the values from a `BookInfo` as follows.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell bookID      (Book id title authors) = id bookTitle   (Book id title authors) = title bookAuthors (Book id title authors) = authors
+bookID      (Book id title authors) = id 
+bookTitle   (Book id title authors) = title 
+bookAuthors (Book id title authors) = authors
 ```
-
-:::
 
 Let's see it in action.
 
-``` screen ghci> bookID (Book 3 "Probability Theory" ["E.T.H. Jaynes"])
+```screen
+ghci> bookID (Book 3 "Probability Theory" ["E.T.H. Jaynes"])
 3
 ghci> bookTitle (Book 3 "Probability Theory" ["E.T.H. Jaynes"])
 "Probability Theory"
@@ -563,83 +541,77 @@ ghci> bookAuthors (Book 3 "Probability Theory" ["E.T.H. Jaynes"])
 
 The compiler can infer the types of the accessor functions based on the constructor we're using in our pattern.
 
-``` screen ghci> :type bookID bookID :: BookInfo -> Int ghci> :type bookTitle bookTitle :: BookInfo -> String ghci> :type bookAuthors bookAuthors :: BookInfo -> [String]
+```screen
+ghci> :type bookID 
+bookID :: BookInfo -> Int 
+ghci> :type bookTitle 
+bookTitle :: BookInfo -> String 
+ghci> :type bookAuthors 
+bookAuthors :: BookInfo -> [String]
 ```
 
 If we use a literal value in a pattern, the corresponding part of the value we're matching against must contain an identical value. For instance, the pattern `(3 : xs)` first of all checks that a value is a non-empty list, by matching against the `(:)` constructor. It also ensures that the head of the list has the exact value `3`. If both of these conditions hold, the tail of the list will be bound to the variable `xs`.
 
 ### Variable naming in patterns
 
-As you read functions that match on lists, you'll frequently find that the names of the variables inside a pattern resemble `(x : xs)` or
-`(d : ds)`. This is a popular naming convention. The idea is that the name `xs` has an "`s`" on the end of its name as if it's the
-"plural" of `x`, because `x` contains the head of the list, and `xs`
-the remaining elements.
+As you read functions that match on lists, you'll frequently find that the names of the variables inside a pattern resemble `(x : xs)` or `(d : ds)`. This is a popular naming convention. The idea is that the name `xs` has an "`s`" on the end of its name as if it's the "plural" of `x`, because `x` contains the head of the list, and `xs` the remaining elements.
 
 ### The wild card pattern
 
-We can indicate that we don't care what is present in part of a pattern. The notation for this is the underscore character "`_`",
-which we call a *wild card*. We use it as follows.
+We can indicate that we don't care what is present in part of a pattern. The notation for this is the underscore character "`_`", which we call a *wild card*. We use it as follows.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell nicerID      (Book id _     _      ) = id nicerTitle   (Book _  title _      ) = title nicerAuthors (Book _  _     authors) = authors
+nicerID      (Book id _     _      ) = id 
+nicerTitle   (Book _  title _      ) = title 
+nicerAuthors (Book _  _     authors) = authors
 ```
-
-:::
 
 Here, we have tidier versions of the accessor functions we introduced earlier. Now, there's no question about which element we're using in each function.
 
 In a pattern, a wild card acts similarly to a variable, but it doesn't bind a new variable. As the examples above indicate, we can use more than one wild card in a single pattern.
 
-Another advantage of wild cards is that a Haskell compiler can warn us if we introduce a variable name in a pattern, but do not use it in a function's body. Defining a variable, but forgetting to use it, can often indicate the presence of a bug, so this is a helpful feature. If we use a wild card instead of a variable that we do not intend to use,
-the compiler won't complain.
+Another advantage of wild cards is that a Haskell compiler can warn us if we introduce a variable name in a pattern, but do not use it in a function's body. Defining a variable, but forgetting to use it, can often indicate the presence of a bug, so this is a helpful feature. If we use a wild card instead of a variable that we do not intend to use, the compiler won't complain.
 
-### Exhaustive patterns and wild cards
+### <span id="exhaustive-patterns-wild-cards">Exhaustive patterns and wild cards</span>
 
-When writing a series of patterns, it's important to cover all of a type's constructors. For example, if we're inspecting a list, we should have one equation that matches the non-empty constructor `(:)`,
-and one that matches the empty-list constructor `[]`.
+When writing a series of patterns, it's important to cover all of a type's constructors. For example, if we're inspecting a list, we should have one equation that matches the non-empty constructor `(:)`, and one that matches the empty-list constructor `[]`.
 
 Let's see what happens if we fail to cover all the cases. Here, we deliberately omit a check for the `[]` constructor.
 
-::: captioned-content
-::: caption BadPattern.hs
-:::
+```haskell
+-- File: src/Ch03/BadPattern.hs
 
-``` haskell badExample (x:xs) = x + badExample xs
+badExample (x:xs) = x + badExample xs
 ```
-
-:::
 
 If we apply this to a value that it cannot match, we'll get an error at runtime: our software has a bug!
 
-``` screen ghci> badExample []
-*** Exception: BadPattern.hs:4:0-36: Non-exhaustive patterns in function badExample
+```screen
+ghci> badExample []
+*** Exception: BadPattern.hs:4:1-37: Non-exhaustive patterns in function badExample
 ```
 
 In this example, no equation in the function's definition matches the value `[]`.
 
-::: TIP Warning about incomplete patterns
-
-GHC provides a helpful compilation option, `-fwarn-incomplete-patterns`,
-that will cause it to print a warning during compilation if a sequence of patterns don't match all of a type's value constructors.
-:::
+> 💡 **Warning about incomplete patterns**
+>
+> GHC provides a helpful compilation option, `-fwarn-incomplete-patterns`, that will cause it to print a warning during compilation if a sequence of patterns don't match all of a type's value constructors.
 
 If we need to provide a default behavior in cases where we don't care about specific constructors, we can use a wild card pattern.
 
-::: captioned-content
-::: caption BadPattern.hs
-:::
+```haskell
+-- File: src/Ch03/BadPattern.hs
 
-``` haskell goodExample (x:xs) = x + goodExample xs goodExample _      = 0
+goodExample (x:xs) = x + goodExample xs 
+goodExample _      = 0
 ```
-
-:::
 
 The wild card above will match the `[]` constructor, so applying this function does not lead to a crash.
 
-``` screen ghci> goodExample []
+```screen
+ghci> goodExample []
 0
 ghci> goodExample [1,2]
 3
@@ -649,76 +621,68 @@ ghci> goodExample [1,2]
 
 Writing accessor functions for each of a data type's components can be repetitive and tedious.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell nicerID      (Book id _     _      ) = id nicerTitle   (Book _  title _      ) = title nicerAuthors (Book _  _     authors) = authors
+nicerID      (Book id _     _      ) = id 
+nicerTitle   (Book _  title _      ) = title
+nicerAuthors (Book _  _     authors) = authors
 ```
 
-:::
+We call this kind of code *boilerplate*: necessary, but bulky and irksome. Haskell programmers don't like boilerplate. Fortunately, the language addresses this particular boilerplate problem: we can define a data type, and accessors for each of its components, simultaneously. (The positions of the commas here is a matter of preference. If you like, put them at the end of a line instead of the beginning.)
 
-We call this kind of code *boilerplate*: necessary, but bulky and irksome. Haskell programmers don't like boilerplate. Fortunately, the language addresses this particular boilerplate problem: we can define a data type, and accessors for each of its components, simultaneously.
-(The positions of the commas here is a matter of preference. If you like, put them at the end of a line instead of the beginning.)
+``` haskell
+-- File: src/Ch03/BookStore.hs
 
-::: captioned-content
-::: caption BookStore.hs
-:::
-
-``` haskell data Customer = Customer {
+data Customer = Customer {
       customerID      :: CustomerID
     , customerName    :: String
     , customerAddress :: Address
     } deriving (Show)
 ```
 
-:::
-
 This is almost exactly identical in meaning to the following, more familiar form.
 
-::: captioned-content
-::: caption AltCustomer.hs
-:::
+```haskell
+--File: src/Ch03/AltCustomer.hs
 
-``` haskell data Customer = Customer Int String [String]
+data Customer = Customer Int String [String]
                 deriving (Show)
 
-customerID :: Customer -> Int customerID (Customer id _ _) = id
+customerID :: Customer -> Int 
+customerID (Customer id _ _) = id
 
-customerName :: Customer -> String customerName (Customer _ name _) = name
+customerName :: Customer -> String 
+customerName (Customer _ name _) = name
 
 customerAddress :: Customer -> [String]
 customerAddress (Customer _ _ address) = address
 ```
 
-:::
-
 For each of the fields that we name in our type definition, Haskell creates an accessor function of that name.
 
-``` screen ghci> :type customerID customerID :: Customer -> CustomerID
+```screen
+ghci> :type customerID 
+customerID :: Customer -> CustomerID
 ```
 
 We can still use the usual application syntax to create a value of this type.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell customer1 = Customer 271828 "J.R. Hacker"
+customer1 = Customer 271828 "J.R. Hacker"
             ["255 Syntax Ct",
              "Milpitas, CA 95134",
              "USA"]
 ```
 
-:::
-
 Record syntax adds a more verbose notation for creating a value. This can sometimes make code more readable.
 
-::: captioned-content
-::: caption BookStore.hs
-:::
+```haskell
+-- File: src/Ch03/BookStore.hs
 
-``` haskell customer2 = Customer {
+customer2 = Customer {
               customerID = 271828
             , customerAddress = ["1048576 Disk Drive",
                                  "Milpitas, CA 95134",
@@ -727,32 +691,35 @@ Record syntax adds a more verbose notation for creating a value. This can someti
             }
 ```
 
-:::
-
-If we use this form, we can vary the order in which we list fields.
-Here, we have moved the name and address fields from their positions in the declaration of the type.
+If we use this form, we can vary the order in which we list fields. Here, we have moved the name and address fields from their positions in the declaration of the type.
 
 When we define a type using record syntax, it also changes the way the type's values are printed.
 
-``` screen ghci> customer1
+```screen
+ghci> customer1
 Customer {customerID = 271828, customerName = "J.R. Hacker", customerAddress = ["255 Syntax Ct","Milpitas, CA 95134","USA"]}
 ```
 
 For comparison, let's look at a `BookInfo` value; we defined this type without record syntax.
 
-``` screen ghci> cities Book 173 "Use of Weapons" ["Iain M. Banks"]
+```screen
+ghci> cities 
+Book 173 "Use of Weapons" ["Iain M. Banks"]
 ```
 
 The accessor functions that we get "for free" when we use record syntax really are normal Haskell functions.
 
-``` screen ghci> :type customerName customerName :: Customer -> String ghci> customerName customer1
+```screen
+ghci> :type customerName 
+customerName :: Customer -> String 
+ghci> customerName customer1
 "J.R. Hacker"
 ```
 
-The standard `System.Time` module makes good use of record syntax.
-Here's a type defined in that module:
+The standard `System.Time` module makes good use of record syntax. Here's a type defined in that module:
 
-``` haskell data CalendarTime = CalendarTime {
+```haskell
+data CalendarTime = CalendarTime {
   ctYear                      :: Int,
   ctMonth                     :: Month,
   ctDay, ctHour, ctMin, ctSec :: Int,
@@ -771,57 +738,43 @@ In the absence of record syntax, it would be painful to extract specific fields 
 
 We've repeatedly mentioned that the list type is polymorphic: the elements of a list can be of any type. We can also add polymorphism to our own types. To do this, we introduce type variables into a type declaration. The prelude defines a type named `Maybe`: we can use this to represent a value that could be either present or missing, e.g. a field in a database row that could be null.
 
-::: captioned-content
-::: caption Nullable.hs
-:::
-
-``` haskell data Maybe a = Just a
+```haskell
+data Maybe a = Just a
              | Nothing
 ```
 
-:::
+Here, the variable `a` is not a regular variable: it's a type variable. It indicates that the `Maybe` type takes another type as its parameter. This lets us use `Maybe` on values of any type.
 
-Here, the variable `a` is not a regular variable: it's a type variable.
-It indicates that the `Maybe` type takes another type as its parameter.
-This lets us use Maybe on values of any type.
+```haskell
+-- File: src/Ch03/Nullable.hs
 
-::: captioned-content
-::: caption Nullable.hs
-:::
-
-``` haskell someBool = Just True
+someBool = Just True
 
 someString = Just "something"
 ```
 
-:::
-
 As usual, we can experiment with this type in `ghci`.
 
-``` screen ghci> Just 1.5
+```screen
+ghci> Just 1.5
 Just 1.5
-ghci> Nothing Nothing ghci> :type Just "invisible bike"
-Just "invisible bike" :: Maybe [Char]
+ghci> Nothing 
+Nothing 
+ghci> :type Just "invisible bike"
+Just "invisible bike" :: Maybe String
 ```
 
-Maybe is a polymorphic, or generic, type. We give the `Maybe` type constructor a parameter to create a specific type, such as `Maybe Int`
-or `Maybe [Bool]`. As we might expect, these types are distinct.
+`Maybe` is a polymorphic, or generic, type. We give the `Maybe` type constructor a parameter to create a specific type, such as `Maybe Int` or `Maybe [Bool]`. As we might expect, these types are distinct.
 
 We can nest uses of parameterised types inside each other, but when we do, we may need to use parentheses to tell the Haskell compiler how to parse our expression.
 
-::: captioned-content
-::: caption Nullable.hs
-:::
+```haskell
+-- File: src/Ch03/Nullable.hs
 
-``` haskell wrapped = Just (Just "wrapped")
+wrapped = Just (Just "wrapped")
 ```
 
-:::
-
-To once again extend an analogy to more familiar languages,
-parameterised types bear some resemblance to templates in C++, and to generics in Java. Just be aware that this is a shallow analogy.
-Templates and generics were added to their respective languages long after the languages were initially defined, and have an awkward feel.
-Haskell's parameterised types are simpler and easier to use, as the language was designed with them from the beginning.
+To once again extend an analogy to more familiar languages, parameterised types bear some resemblance to templates in C++, and to generics in Java. Just be aware that this is a shallow analogy. Templates and generics were added to their respective languages long after the languages were initially defined, and have an awkward feel. Haskell's parameterised types are simpler and easier to use, as the language was designed with them from the beginning.
 
 ## Recursive types
 
