@@ -1053,71 +1053,52 @@ clause. The definitions in a `where` clause apply to the code that
 *precedes* it. Here's a similar function to `lend`, using `where`
 instead of `let`.
 
-::: captioned-content
-::: caption Lending.hs
-:::
-
-``` haskell lend2 amount balance = if amount < reserve * 0.5
+```haskell
+-- File: src/Ch03/Lending.hs
+lend2 amount balance = if amount < reserve * 0.5
                        then Just newBalance
                        else Nothing
     where reserve    = 100
           newBalance = balance - amount
 ```
 
-:::
+While a `where` clause may initially seem weird, it offers a wonderful aid to readability. It lets us direct our reader's focus to the important details of an expression, with the supporting definitions following afterwards. After a while, you may find yourself missing `where` clauses in languages that lack them.
 
-While a `where` clause may initially seem weird, it offers a wonderful aid to readability. It lets us direct our reader's focus to the important details of an expression, with the supporting definitions following afterwards. After a while, you may find yourself missing
-`where` clauses in languages that lack them.
-
-As with `let` expressions, white space is significant in `where`
-clauses. We will talk more about the layout rules shortly, in [the section called "The offside rule and white space in an expression"](3-defining-types-streamlining-functions.org::*The offside rule and white space in an expression)
+As with `let` expressions, white space is significant in `where` clauses. We will talk more about the layout rules shortly, in the section called ["The offside rule and white space in an expression"](#The-offside-rule-and-white-space-in-an-expression)
 
 ### Local functions, global variables
 
 You'll have noticed that Haskell's syntax for defining a variable looks very similar to its syntax for defining a function. This symmetry is preserved in `let` and `where` blocks: we can define local
 *functions* just as easily as local *variables*.
 
-::: captioned-content
-::: caption LocalFunction.hs
-:::
-
-``` haskell pluralise :: String -> [Int] -> [String]
+```haskell
+-- File: src/Ch03/LocalFunction.hs
+pluralise :: String -> [Int] -> [String]
 pluralise word counts = map plural counts
     where plural 0 = "no " ++ word ++ "s"
           plural 1 = "one " ++ word
           plural n = show n ++ " " ++ word ++ "s"
 ```
 
-:::
-
-We have defined a local function, `plural`, that consists of several equations. Local functions can freely use variables from the scopes that enclose them: here, we use `word` from the definition of the outer function `pluralise`. In the definition of `pluralise`, the `map`
-function (which we'll be revisiting in the next chapter) applies the local function `plural` to every element of the `counts` list.
+We have defined a local function, `plural`, that consists of several equations. Local functions can freely use variables from the scopes that enclose them: here, we use `word` from the definition of the outer function `pluralise`. In the definition of `pluralise`, the `map` function (which we'll be revisiting in the next chapter) applies the local function `plural` to every element of the `counts` list.
 
 We can also define variables, as well as functions, at the top level of a source file.
 
-::: captioned-content
-::: caption GlobalVariable.hs
-:::
-
-``` haskell itemName = "Weighted Companion Cube"
+```haskell
+-- File: src/Ch03/GlobalVariable.hs
+itemName = "Weighted Companion Cube"
 ```
-
-:::
 
 ## <span id="The-offside-rule-and-white-space-in-an-expression">The offside rule and white space in an expression</span>
 
-In our definitions of `lend` and `lend2`, the left margin of our text wandered around quite a bit. This was not an accident: normally in Haskell white space has meaning: it uses the code layout [as defined in the report](https://www.haskell.org/onlinereport/haskell2010/haskellch10.html#x17-17800010.3)
-as a cue to parse it. This is sometimes called the *offside rule*.
+In our definitions of `lend` and `lend2`, the left margin of our text wandered around quite a bit. This was not an accident: normally in Haskell white space has meaning: it uses the code layout [as defined in the report](https://www.haskell.org/onlinereport/haskell2010/haskellch10.html#x17-17800010.3) as a cue to parse it. This is sometimes called the *offside rule*.
 
 At the beginning of a source file, the first top level declaration or definition can start in any column, and the Haskell compiler or interpreter remembers that indentation level. Every subsequent top level declaration must have the same indentation.
 
 Here's an illustration of the top level indentation rule. Our first file, `GoodIndent.hs`, is well behaved.
 
-::: captioned-content
-::: caption GoodIndent.hs
-:::
-
-``` haskell
+```haskell
+-- File: src/Ch03/GoodIndent.hs
 -- This is the leftmost column.
 
   -- It's fine for top-level declarations to start in any column...
@@ -1127,15 +1108,10 @@ Here's an illustration of the top level indentation rule. Our first file, `GoodI
   secondGoodIndentation = 2
 ```
 
-:::
-
 Our second, `BadIndent.hs`, doesn't play by the rules.
 
-::: captioned-content
-::: caption BadIndent.hs
-:::
-
-``` haskell
+```haskell
+-- File: src/Ch03/BadIndent.hs
 -- This is the leftmost column.
 
     -- Our first declaration is in column 4.
@@ -1145,36 +1121,31 @@ Our second, `BadIndent.hs`, doesn't play by the rules.
   secondBadIndentation = 2
 ```
 
-:::
-
 Here's what happens when we try to load the two files into `ghci`.
 
-``` screen ghci> :load GoodIndent.hs
-[1 of 1] Compiling Main             ( GoodIndent.hs, interpreted )
+```screen
+ghci> :load GoodIndent.hs
+[1 of 1] Compiling Ch03.GoodIndent  ( GoodIndent.hs, interpreted )
 Ok, one module loaded.
 ghci> :load BadIndent.hs
-[1 of 1] Compiling Main             ( BadIndent.hs, interpreted )
+[1 of 1] Compiling Ch03.BadIndent   ( BadIndent.hs, interpreted )
 
-BadIndent.hs:8:3: error:
+BadIndent.hs:10:3: error:
     parse error on input ‘secondBadIndentation’
-  |
-8 |   secondBadIndentation = 2
-  |   ^^^^^^^^^^^^^^^^^^^^
+   |
+10 |   secondBadIndentation = 2
+   |   ^^^^^^^^^^^^^^^^^^^^
 Failed, no modules loaded.
 ```
 
 An empty following line is treated as a continuation of the current item, as is a following line indented further to the right.
 
-The rules for `let` expressions and `where` clauses are similar. After a
-`let` or `where` keyword, the Haskell compiler or interpreter remembers the indentation of the next token it sees. If the line that follows is empty, or its indentation is further to the right, it is considered to continue the previous line. If the indentation is the same as the start of the preceding item, this is treated as beginning a new item in the same block.
+The rules for `let` expressions and `where` clauses are similar. After a `let` or `where` keyword, the Haskell compiler or interpreter remembers the indentation of the next token it sees. If the line that follows is empty, or its indentation is further to the right, it is considered to continue the previous line. If the indentation is the same as the start of the preceding item, this is treated as beginning a new item in the same block.
 
-::: captioned-content
-::: caption Indentation.hs
-:::
-
-``` haskell foo = let firstDefinition = blah blah
+```haskell
+foo = let firstDefinition = blah blah
           -- a comment-only line is treated as empty
-                            continuation blah
+                              continuation blah
 
           -- we reduce the indentation, so this is a new definition
           secondDefinition = yada yada
@@ -1182,73 +1153,49 @@ The rules for `let` expressions and `where` clauses are similar. After a
       in whatever
 ```
 
-:::
-
 Here are nested uses of `let` and `where`.
 
-::: captioned-content
-::: caption LetLet.hs
-:::
-
-``` haskell bar = let b = 2
+```haskell
+-- File: src/Ch03/LetWhere.hs
+bar = let b = 2
           c = True
       in let a = b
          in (a, c)
 ```
 
-:::
+The name `a` is only visible within the inner `let` expression. It's not visible in the outer `let`. If we try to use the name `a` there, we'll get a compilation error. The indentation gives both us and the compiler a visual cue as to what is currently in scope.
 
-The name `a` is only visible within the inner `let` expression. It's not visible in the outer `let`. If we try to use the name `a` there,
-we'll get a compilation error. The indentation gives both us and the compiler a visual cue as to what is currently in scope.
-
-::: captioned-content
-::: caption WhereWhere.hs
-:::
-
-``` haskell foo = x
+```haskell
+-- File: src/Ch03/LetWhere.hs
+foo = x
     where x = y
               where y = 2
 ```
 
-:::
-
-Similarly, the scope of the first `where` clause is the definition of
-`foo`, but the scope of the second is just the first `where` clause.
+Similarly, the scope of the first `where` clause is the definition of `foo`, but the scope of the second is just the first `where` clause.
 
 The indentation we use for the `let` and `where` clauses makes our intentions easy to figure out.
 
 ### A note about tabs versus spaces
 
-The default in Haskell code is to indent using spaces. `ghc` and `ghci`
-will warn you if you indent with tabs unless you disable it with the
-`-Wno-tabs` flag. The reason for this is that it is easier to align expressions using spaces.
+The default in Haskell code is to indent using spaces. `ghc` and `ghci` will warn you if you indent with tabs unless you disable it with the `-Wno-tabs` flag. The reason for this is that it is easier to align expressions using spaces.
 
 If you like tabs you can use them as long as you correctly align expressions. For the compiler a tab equals to eight spaces and uses this amount to determine if an indented expression is correctly aligned. In the next example you'll see the `b` aligned with the `a` only if the tab width equals eight in whichever app you are using to read this text.
 
-::: captioned-content
-::: caption TabAlign.hs
-:::
-
-``` haskell x = let a = 1
-    b = 2
-    in a + b
-```
-
-:::
-
-We need the amount of characters before the `a` to be equal to eight or the `b` won't be aligned and won't compile. Totally impracticall. It is better to break the expressions as below.
-
-::: captioned-content
-::: caption TabAlign2.hs
-:::
-
-``` haskell x = let
-        a = 1
+```haskell
+x = let a = 1
         b = 2
-    in a + b
+        in a + b
 ```
 
-:::
+We need the amount of characters before the `a` to be equal to eight or the `b` won't be aligned and won't compile. Totally impractical. It is better to break the expressions as below.
+
+```haskell
+x = let
+            a = 1
+            b = 2
+        in a + b
+```
 
 As long as you correctly align expressions you can even [mix spaces and tabs](http://dmwit.com/tabs/).
 
@@ -1256,11 +1203,8 @@ As long as you correctly align expressions you can even [mix spaces and tabs](ht
 
 We can use explicit structuring instead of layout to indicate what we mean. To do so, we start a block of equations with an opening curly brace; separate each item with a semicolon; and finish the block with a closing curly brace. The following two uses of `let` have the same meanings.
 
-::: captioned-content
-::: caption Braces.hs
-:::
-
-``` haskell bar = let a = 1
+```haskell
+bar = let a = 1
           b = 2
           c = 3
       in a + b + c
@@ -1270,39 +1214,25 @@ foo = let { a = 1;  b = 2;
       in a + b + c
 ```
 
-:::
+When we use explicit structuring, the normal layout rules don't apply, which is why we can get away with unusual indentation in the second `let` expression.
 
-When we use explicit structuring, the normal layout rules don't apply,
-which is why we can get away with unusual indentation in the second
-`let` expression.
-
-We can use explicit structuring anywhere that we'd normally use layout.
-It's valid for `where` clauses, and even top-level declarations. Just remember that although the facility exists, explicit structuring is hardly ever actually *used* in Haskell programs.
+We can use explicit structuring anywhere that we'd normally use layout. It's valid for `where` clauses, and even top-level declarations. Just remember that although the facility exists, explicit structuring is hardly ever actually *used* in Haskell programs.
 
 ## The case expression
 
-Function definitions are not the only place where we can use pattern matching. The `case` construct lets us match patterns within an expression. Here's what it looks like. This function (defined for us in
-`Data.Maybe`) unwraps a `Maybe` value, using a default if the value is
-`Nothing`.
+Function definitions are not the only place where we can use pattern matching. The `case` construct lets us match patterns within an expression. Here's what it looks like. This function (defined for us in `Data.Maybe`) unwraps a `Maybe` value, using a default if the value is `Nothing`.
 
-::: captioned-content
-::: caption Guard.hs
-:::
-
-``` haskell fromMaybe defval wrapped =
+```haskell
+-- File: src/Ch03/Guard.hs
+fromMaybe defval wrapped =
     case wrapped of
       Nothing     -> defval
       Just value  -> value
 ```
 
-:::
+The `case` keyword is followed by an arbitrary expression: the pattern match is performed against the result of this expression. The `of` keyword signifies the end of the expression and the beginning of the block of patterns and expressions.
 
-The `case` keyword is followed by an arbitrary expression: the pattern match is performed against the result of this expression. The `of`
-keyword signifies the end of the expression and the beginning of the block of patterns and expressions.
-
-Each item in the block consists of a pattern, followed by an arrow `->`,
-followed by an expression to evaluate if that pattern matches. These expressions must all have the same type. The result of the `case`
-expression is the result of the expression associated with the first pattern to match. Matches are attempted from top to bottom.
+Each item in the block consists of a pattern, followed by an arrow `->`, followed by an expression to evaluate if that pattern matches. These expressions must all have the same type. The result of the `case` expression is the result of the expression associated with the first pattern to match. Matches are attempted from top to bottom.
 
 To express "here's the expression to evaluate if none of the other patterns match", we just use the wild card pattern `_` as the last in our list of patterns. If a pattern match fails, we will get the same kind of runtime error as we saw earlier.
 
@@ -1312,73 +1242,54 @@ There are a few ways in which new Haskell programmers can misunderstand or misus
 
 ### Incorrectly matching against a variable
 
-::: captioned-content
-::: caption BogusPattern.hs
-:::
-
-``` haskell data Fruit = Apple | Orange
+```haskell
+data Fruit = Apple | Orange
 
 apple = "apple"
 
 orange = "orange"
 
-whichFruit :: String -> Fruit whichFruit f = case f of
+whichFruit :: String -> Fruit 
+whichFruit f = case f of
                  apple  -> Apple
                  orange -> Orange
 ```
 
-:::
-
-A naive glance suggests that this code is trying to check the value `f`
-to see whether it matches the value `apple` or `orange`.
+A naive glance suggests that this code is trying to check the value `f` to see whether it matches the value `apple` or `orange`.
 
 It is easier to spot the mistake if we rewrite the code in an equational style.
 
-::: captioned-content
-::: caption BogusPattern.hs
-:::
-
-``` haskell equational apple = Apple equational orange = Orange
+```haskell
+equational apple = Apple 
+equational orange = Orange
 ```
 
 :::
 
 Now can you see the problem? Here, it is more obvious `apple` does not refer to the top level value named `apple`: it is a local pattern variable.
 
-::: NOTE Irrefutable patterns
-
-We refer to a pattern that always succeeds as *irrefutable*. Plain variable names and the wild card `_` are examples of irrefutable patterns.
-:::
+> ℹ️ **Irrefutable patterns**
+>
+> We refer to a pattern that always succeeds as *irrefutable*. Plain variable names and the wild card `_` are examples of irrefutable patterns.
 
 Here's a corrected version of this function.
 
-::: captioned-content
-::: caption BogusPattern.hs
-:::
-
-``` haskell betterFruit f = case f of
+```haskell
+-- File: src/Ch03/BogusPattern.hs
+betterFruit f = case f of
                   "apple"  -> Apple
                   "orange" -> Orange
 ```
 
-:::
-
-We fixed the problem by matching against the literal values `"apple"`
-and `"orange"`.
+We fixed the problem by matching against the literal values `"apple"` and `"orange"`.
 
 ### Incorrectly trying to compare for equality
 
-What if we want to compare the values stored in two nodes of type Tree,
-and return one of them if they're equal? Here's an attempt.
+What if we want to compare the values stored in two nodes of type `Tree`, and return one of them if they're equal? Here's an attempt.
 
-::: captioned-content
-::: caption BadTree.hs
-:::
-
-``` haskell bad_nodesAreSame (Node a _ _) (Node a _ _) = Just a bad_nodesAreSame _            _            = Nothing
+```haskell
+bad_nodesAreSame (Node a _ _) (Node a _ _) = Just a bad_nodesAreSame _            _            = Nothing
 ```
-
-:::
 
 A name can only appear once in a set of pattern bindings. We cannot place a variable in multiple positions to express the notion "this value and that should be identical". Instead, we'll solve this problem using *guards*, another invaluable Haskell feature.
 

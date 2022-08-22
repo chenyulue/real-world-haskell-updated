@@ -34,11 +34,18 @@ library
       Ch03.Add
       Ch03.AlgebraicVector
       Ch03.AltCustomer
+      Ch03.BadIndent
       Ch03.BadPattern
+      Ch03.BogusPattern
       Ch03.BookStore
       Ch03.Distinction
+      Ch03.GlobalVariable
+      Ch03.GoodIndent
+      Ch03.Guard
       Ch03.Lending
+      Ch03.LetWhere
       Ch03.ListADT
+      Ch03.LocalFunction
       Ch03.MySecond
       Ch03.NestedLets
       Ch03.Nullable
