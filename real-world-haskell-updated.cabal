@@ -37,9 +37,14 @@ library
       Ch03.BadPattern
       Ch03.BookStore
       Ch03.Distinction
+      Ch03.Lending
+      Ch03.ListADT
+      Ch03.MySecond
+      Ch03.NestedLets
       Ch03.Nullable
       Ch03.Roygbiv
       Ch03.ShapeUnion
+      Ch03.Tree
       Ch03.Tuple
       Lib
   other-modules:

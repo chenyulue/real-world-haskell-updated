@@ -778,85 +778,78 @@ To once again extend an analogy to more familiar languages, parameterised types 
 
 ## Recursive types
 
-The familiar list type is *recursive*: it's defined in terms of itself.
-To understand this, let's create our own list-like type. We'll use
-`Cons` in place of the `(:)` constructor, and `Nil` in place of `[]`.
+The familiar list type is *recursive*: it's defined in terms of itself. To understand this, let's create our own list-like type. We'll use `Cons` in place of the `(:)` constructor, and `Nil` in place of `[]`.
 
-``` haskell
--- file ListADT.hs data List a = Cons a (List a)
+```haskell
+-- File: src/Ch03/ListADT.hs 
+data List a = Cons a (List a)
             | Nil
               deriving (Show)
 ```
 
-Because `List a` appears on both the left and the right of the `=` sign,
-the type's definition refers to itself. If we want to use the `Cons`
-constructor to create a new value, we must supply one value of type `a`,
-and another of type `List a`. Let's see where this leads us in practice.
+Because `List a` appears on both the left and the right of the `=` sign, the type's definition refers to itself. If we want to use the `Cons` constructor to create a new value, we must supply one value of type `a`, and another of type `List a`. Let's see where this leads us in practice.
 
 The simplest value of type `List a` that we can create is `Nil`. Save the type definition in a file, then load it into `ghci`.
 
-``` screen ghci> Nil Nil
+```screen
+ghci> Nil
+Nil
 ```
 
 Because `Nil` has a `List` type, we can use it as a parameter to `Cons`.
 
-``` screen ghci> Cons 0 Nil Cons 0 Nil
+```screen
+ghci> Cons 0 Nil 
+Cons 0 Nil
 ```
 
 And because `Cons 0 Nil` has the type `List a`, we can use this as a parameter to `Cons`.
 
-``` screen ghci> Cons 1 it Cons 1 (Cons 0 Nil)
-ghci> Cons 2 it Cons 2 (Cons 1 (Cons 0 Nil))
-ghci> Cons 3 it Cons 3 (Cons 2 (Cons 1 (Cons 0 Nil)))
+```screen
+ghci> Cons 1 it 
+Cons 1 (Cons 0 Nil)
+ghci> Cons 2 it 
+Cons 2 (Cons 1 (Cons 0 Nil))
+ghci> Cons 3 it 
+Cons 3 (Cons 2 (Cons 1 (Cons 0 Nil)))
 ```
 
-We could continue in this fashion indefinitely, creating ever longer
-`Cons` chains, each with a single `Nil` at the end.
+We could continue in this fashion indefinitely, creating ever longer `Cons` chains, each with a single `Nil` at the end.
 
-::: TIP Is `List` an acceptable list?
-
-We can easily prove to ourselves that our `List a` type has the same shape as the built-in list type `[a]`. To do this, we write a function that takes any value of type `[a]`, and produces a value of type
-`List a`.
-
-::: captioned-content
-::: caption ListADT.hs
-:::
-
-``` haskell fromList (x:xs) = Cons x (fromList xs)
-fromList []     = Nil
-```
-
-:::
-
-By inspection, this clearly substitutes a `Cons` for every `(:)`, and a
-`Nil` for each `[]`. This covers both of the built-in list type's constructors. The two types are *isomorphic*; they have the same shape.
-
-``` screen ghci> fromList "durian"
-Cons 'd' (Cons 'u' (Cons 'r' (Cons 'i' (Cons 'a' (Cons 'n' Nil)))))
-ghci> fromList [Just True, Nothing, Just False]
-Cons (Just True) (Cons Nothing (Cons (Just False) Nil))
-```
-
-:::
+> 💡 **Is `List` an acceptable list?**
+>
+> We can easily prove to ourselves that our `List a` type has the same shape as the built-in list type `[a]`. To do this, we write a function that takes any value of type `[a]`, and produces a value of type `List a`.
+>
+> ```haskell
+> -- File: src/Ch03/ListADT.hs
+> fromList (x:xs) = Cons x (fromList xs)
+> fromList []     = Nil
+> ```
+>
+> By inspection, this clearly substitutes a `Cons` for every `(:)`, and a `Nil` for each `[]`. This covers both of the built-in list type's constructors. The two types are *isomorphic*; they have the same shape.
+>
+> ```screen
+> ghci> fromList "durian"
+> Cons 'd' (Cons 'u' (Cons 'r' (Cons 'i' (Cons 'a' (Cons 'n' Nil)))))
+> ghci> fromList [Just True, Nothing, Just False]
+> Cons (Just True) (Cons Nothing (Cons (Just False) Nil))
+> ```
 
 For a third example of what a recursive type is, here is a definition of a binary tree type.
 
-::: captioned-content
-::: caption Tree.hs
-:::
-
-``` haskell data Tree a = Node a (Tree a) (Tree a)
+```haskell
+-- File: src/Ch03/Tree.hs
+data Tree a = Node a (Tree a) (Tree a)
             | Empty
               deriving (Show)
 ```
-
-:::
 
 A binary tree is either a node with two children, which are themselves binary trees, or an empty value.
 
 This time, let's search for insight by comparing our definition with one from a more familiar language. Here's a similar class definition in Java.
 
-``` java class Tree<A>
+```java
+class Tree<A>
 {
     A value;
     Tree<A> left;
@@ -864,88 +857,79 @@ This time, let's search for insight by comparing our definition with one from a 
 
     public Tree(A v, Tree<A> l, Tree<A> r)
     {
-    value = v;
-    left = l;
-    right = r;
+        value = v;
+        left = l;
+        right = r;
     }
 }
 ```
 
-The one significant difference is that Java lets us use the special value `null` anywhere to indicate "nothing", so we can use `null` to indicate that a node is missing a left or right child. Here's a small function that constructs a tree with two leaves (a leaf, by convention,
-has no children).
+The one significant difference is that Java lets us use the special value `null` anywhere to indicate "nothing", so we can use `null` to indicate that a node is missing a left or right child. Here's a small function that constructs a tree with two leaves (a leaf, by convention, has no children).
 
-``` java class Example
+```java
+class Example
 {
     static Tree<String> simpleTree()
     {
-    return new Tree<String>(
+        return new Tree<String>(
             "parent",
-        new Tree<String>("left leaf", null, null),
-        new Tree<String>("right leaf", null, null));
+            new Tree<String>("left leaf", null, null),
+            new Tree<String>("right leaf", null, null));
     }
 }
 ```
 
-In Haskell, we don't have an equivalent of `null`. We could use the
-`Maybe` type to provide a similar effect, but that bloats the pattern matching. Instead, we've decided to use a no-argument `Empty`
-constructor. Where the Java example provides `null` to the `Tree`
+In Haskell, we don't have an equivalent of `null`. We could use the `Maybe` type to provide a similar effect, but that bloats the pattern matching. Instead, we've decided to use a no-argument `Empty` constructor. Where the Java example provides `null` to the `Tree`
 constructor, we supply `Empty` in Haskell.
 
-::: captioned-content
-::: caption Tree.hs
-:::
-
-``` haskell simpleTree = Node "parent" (Node "left child" Empty Empty)
+```haskell
+-- File: src/Ch03/Tree.hs
+simpleTree = Node "parent" (Node "left child" Empty Empty)
                            (Node "right child" Empty Empty)
 ```
 
-:::
-
 ### Exercises
 
-1. Write the converse of `fromList` for the List type: a function that
-    takes a List a and generates a `[a]`.
-2. Define a tree type that has only one constructor, like our Java
-    example. Instead of the `Empty` constructor, use the `Maybe` type to
-    refer to a node's children.
+1. Write the converse of `fromList` for the `List` type: a function that takes a `List a` and generates a `[a]`.
+2. Define a tree type that has only one constructor, like our Java example. Instead of the `Empty` constructor, use the `Maybe` type to refer to a node's children.
 
 ## Reporting errors
 
-Haskell provides a standard function, `error :: String -> a`, that we can call when something has gone terribly wrong in our code. We give it a string parameter, which is the error message to display. Its type signature looks peculiar: how can it produce a value of any type `a`
-given only a string?
+Haskell provides a standard function, `error :: String -> a`, that we can call when something has gone terribly wrong in our code. We give it a string parameter, which is the error message to display. Its type signature looks peculiar: how can it produce a value of any type `a` given only a string?
 
 It has a result type of `a` so that we can call it anywhere and it will always have the right type. However, it does not return a value like a normal function: instead, it *immediately aborts evaluation*, and prints the error message we give it.
 
-The `mySecond` function returns the second element of its input list,
-but fails if its input list isn't long enough.
+The `mySecond` function returns the second element of its input list, but fails if its input list isn't long enough.
 
-::: captioned-content
-::: caption MySecond.hs
-:::
-
-``` haskell mySecond :: [a] -> a
-
+```haskell
+-- File: src/Ch03/MySecond.hs
+mySecond :: [a] -> a
 mySecond xs = if null (tail xs)
               then error "list too short"
               else head (tail xs)
 ```
 
-:::
-
 As usual, we can see how this works in practice in `ghci`.
 
-``` screen ghci> mySecond "xi"
+```screen
+ghci> mySecond "xi"
 'i'
 ghci> mySecond [2]
-*** Exception: list too short ghci> head (mySecond [[9]])
 *** Exception: list too short
+CallStack (from HasCallStack):
+  error, called at MySecond.hs:6:20 in main:Ch03.MySecond 
+ghci> head (mySecond [[9]])
+*** Exception: list too short
+CallStack (from HasCallStack):
+  error, called at MySecond.hs:6:20 in main:Ch03.MySecond
 ```
 
 Notice the third case above, where we try to use the result of the call to `mySecond` as the argument to another function. Evaluation still terminates and drops us back to the `ghci` prompt. This is the major weakness of using `error`: it doesn't let our caller distinguish between a recoverable error and a problem so severe that it really should terminate our program.
 
 As we have already seen, a pattern matching failure causes a similar unrecoverable error.
 
-``` screen ghci> mySecond []
+```screen
+ghci> mySecond []
 *** Exception: Prelude.tail: empty list
 ```
 
@@ -953,31 +937,27 @@ As we have already seen, a pattern matching failure causes a similar unrecoverab
 
 We can use the `Maybe` type to represent the possibility of an error.
 
-If we want to indicate that an operation has failed, we can use the
-`Nothing` constructor. Otherwise, we wrap our value with the `Just`
-constructor.
+If we want to indicate that an operation has failed, we can use the `Nothing` constructor. Otherwise, we wrap our value with the `Just` constructor.
 
-Let's see how our `mySecond` function changes if we return a `Maybe`
-value instead of calling `error`.
+Let's see how our `mySecond` function changes if we return a `Maybe` value instead of calling `error`.
 
-::: captioned-content
-::: caption MySecond.hs
-:::
-
-``` haskell safeSecond :: [a] -> Maybe a
-
-safeSecond [] = Nothing safeSecond xs = if null (tail xs)
+```haskell
+-- File: src/Ch03/MySecond.hs
+safeSecond :: [a] -> Maybe a
+safeSecond [] = Nothing 
+safeSecond xs = if null (tail xs)
                 then Nothing
                 else Just (head (tail xs))
 ```
 
-:::
+If the list we're passed is too short, we return `Nothing` to our caller. This lets them decide what to do, while a call to `error` would force a crash.
 
-If the list we're passed is too short, we return `Nothing` to our caller. This lets them decide what to do, where a call to `error` would force a crash.
-
-``` screen ghci> safeSecond []
-Nothing ghci> safeSecond [1]
-Nothing ghci> safeSecond [1,2]
+```screen
+ghci> safeSecond []
+Nothing 
+ghci> safeSecond [1]
+Nothing 
+ghci> safeSecond [1,2]
 Just 2
 ghci> safeSecond [1,2,3]
 Just 2
@@ -985,111 +965,86 @@ Just 2
 
 To return to an earlier topic, we can further improve the readability of this function with pattern matching.
 
-::: captioned-content
-::: caption MySecond.hs
-:::
-
-``` haskell tidySecond :: [a] -> Maybe a
-
-tidySecond (_:x:_) = Just x tidySecond _       = Nothing
+```haskell
+-- File: src/Ch03/MySecond.hs
+tidySecond :: [a] -> Maybe a
+tidySecond (_:x:_) = Just x 
+tidySecond _       = Nothing
 ```
 
-:::
-
-The first pattern only matches if the list is at least two elements long
-(it contains two list constructors), and it binds the variable `x` to the list's second element. The second pattern is matched if the first fails.
+The first pattern only matches if the list is at least two elements long (it contains two list constructors), and it binds the variable `x` to the list's second element. The second pattern is matched if the first fails.
 
 ## <span id="intro-loc-var">Introducing local variables</span>
 
 Within the body of a function, we can introduce new local variables whenever we need them, using a `let` expression. Here is a simple function that determines whether we should lend some money to a customer. We meet a money reserve of at least 100, we return our new balance after subtracting the amount we have loaned.
 
-::: captioned-content
-::: caption Lending.hs
-:::
-
-``` haskell lend amount balance = let reserve    = 100
+```haskell
+-- File: src/Ch03/Lending.hs
+lend amount balance = let reserve    = 100
                           newBalance = balance - amount
                       in if balance < reserve
                          then Nothing
                          else Just newBalance
 ```
 
-:::
-
 The keywords to look out for here are `let`, which starts a block of variable declarations, and `in`, which ends it. Each line introduces a new variable. The name is on the left of the `=`, and the expression to which it is bound is on the right.
 
-::: NOTE Special notes
+> ℹ️ **Special notes**
+>
+> Let us re-emphasise our wording: a name in a `let` block is bound to an *expression*, not to a *value*. Because Haskell is a lazy language, the expression associated with a name won't actually be evaluated until it's needed. In the above example, we will not compute the value of `newBalance` if we do not meet our reserve.
+>
+> When we define a variable in a `let` block, we refer to it as a *`let`-bound* variable. This simply means what it says: we have bound the variable in a `let` block.
+>
+> Also, our use of white space here is important. We'll talk in more detail about the layout rules in the section called ["The offside rule and white space in an expression"](#The-offside-rule-and-white-space-in-an-expression)
 
-Let us re-emphasise our wording: a name in a `let` block is bound to an
-*expression*, not to a *value*. Because Haskell is a lazy language, the expression associated with a name won't actually be evaluated until it's needed. In the above example, we will not compute the value of
-`newBalance` if we do not meet our reserve.
+We can use the names of a variable in a `let` block both within the block of declarations and in the expression that follows the `in` keyword.
 
-When we define a variable in a `let` block, we refer to it as a
-*`let`-bound* variable. This simply means what it says: we have bound the variable in a `let` block.
-
-Also, our use of white space here is important. We'll talk in more detail about the layout rules in [the section called "The offside rule and white space in an expression"](3-defining-types-streamlining-functions.org::*The offside rule and white space in an expression)
-:::
-
-We can use the names of a variable in a `let` block both within the block of declarations and in the expression that follows the `in`
-keyword.
-
-In general, we'll refer to the places within our code where we can use a name as the name's *scope*. If we can use a name, it's *in scope*,
-otherwise it's *out of scope*. If a name is visible throughout a source file, we say it's at the *top level*.
+In general, we'll refer to the places within our code where we can use a name as the name's *scope*. If we can use a name, it's *in scope*, otherwise it's *out of scope*. If a name is visible throughout a source file, we say it's at the *top level*.
 
 ### Shadowing
 
 We can "nest" multiple `let` blocks inside each other in an expression.
 
-::: captioned-content
-::: caption NestedLets.hs
-:::
-
-``` haskell foo = let a = 1
+```haskell
+-- File: src/ch03/NestedLets.hs
+foo = let a = 1
       in let b = 2
          in a + b
 ```
 
-:::
-
 It's perfectly legal, but not exactly wise, to repeat a variable name in a nested `let` expression.
 
-::: captioned-content
-::: caption NestedLets.hs
-:::
-
-``` haskell bar = let x = 1
+```haskell
+-- File: src/ch03/NestedLets.hs
+bar = let x = 1
       in ((let x = "foo" in x), x)
 ```
 
-:::
-
 Here, the inner `x` is hiding, or *shadowing*, the outer `x`. It has the same name, but a different type and value.
 
-``` screen ghci> bar
+```screen
+ghci> bar
 ("foo",1)
 ```
 
 We can also shadow a function's parameters, leading to even stranger results. What is the type of this function?
 
-::: captioned-content
-::: caption NestedLets.hs
-:::
-
-``` haskell quux a = let a = "foo"
+```haskell
+-- File: src/ch03/NestedLets.hs
+quux a = let a = "foo"
          in a ++ "eek!"
 ```
 
-:::
-
 Because the function's argument `a` is never used in the body of the function, due to being shadowed by the `let`-bound `a`, the argument can have any type at all.
 
-``` screen ghci> :type quux quux :: t -> [Char]
+```screen
+ghci> :type quux 
+quux :: t -> [Char]
 ```
 
-::: TIP Compiler warnings are your friends
-
-Shadowing can obviously lead to confusion and nasty bugs, so GHC has a helpful `-fwarn-name-shadowing` option. When enabled, GHC will print a warning message any time we shadow a name.
-:::
+> 💡 **Compiler warnings are your friends**
+>
+> Shadowing can obviously lead to confusion and nasty bugs, so GHC has a helpful `-fwarn-name-shadowing` option. When enabled, GHC will print a warning message any time we shadow a name.
 
 ### The where clause
 
@@ -1149,7 +1104,7 @@ We can also define variables, as well as functions, at the top level of a source
 
 :::
 
-## The offside rule and white space in an expression
+## <span id="The-offside-rule-and-white-space-in-an-expression">The offside rule and white space in an expression</span>
 
 In our definitions of `lend` and `lend2`, the left margin of our text wandered around quite a bit. This was not an accident: normally in Haskell white space has meaning: it uses the code layout [as defined in the report](https://www.haskell.org/onlinereport/haskell2010/haskellch10.html#x17-17800010.3)
 as a cue to parse it. This is sometimes called the *offside rule*.
