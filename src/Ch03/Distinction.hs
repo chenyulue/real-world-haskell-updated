@@ -1,4 +1,4 @@
-module Ch03.Distinctoin where
+module Ch03.Distinction where
 
 a = ("Porpoise", "Grey")
 b = ("Table", "Oak")
