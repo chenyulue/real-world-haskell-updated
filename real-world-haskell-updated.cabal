@@ -36,6 +36,7 @@ library
       Ch03.AltCustomer
       Ch03.BadIndent
       Ch03.BadPattern
+      Ch03.BadTree
       Ch03.BogusPattern
       Ch03.BookStore
       Ch03.Distinction
@@ -53,6 +54,7 @@ library
       Ch03.ShapeUnion
       Ch03.Tree
       Ch03.Tuple
+      Ch04.SplitLines
       Lib
   other-modules:
       Paths_real_world_haskell_updated
@@ -60,6 +62,30 @@ library
       src
   build-depends:
       base >=4.7 && <5
+  default-language: Haskell2010
+
+executable fixLines
+  main-is: fixLines.hs
+  other-modules:
+      Paths_real_world_haskell_updated
+  hs-source-dirs:
+      app/Ch04
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , real-world-haskell-updated
+  default-language: Haskell2010
+
+executable interact
+  main-is: interactWith.hs
+  other-modules:
+      Paths_real_world_haskell_updated
+  hs-source-dirs:
+      app/Ch04
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , real-world-haskell-updated
   default-language: Haskell2010
 
 executable real-world-haskell-updated-exe

@@ -621,7 +621,7 @@ ghci> :type 3 + 2
 
 ## A simple program
 
-Let's take a small leap ahead, and write a small program that counts the number of lines in its input. Don't expect to understand this yet; it's just fun to get our hands dirty. In a text editor, enter the following code into a file, and save it as `WC.hs`.
+Let's take a small leap ahead, and write a small program that counts the number of lines in its input. Don't expect to understand this yet; it's just fun to get our hands dirty. In a text editor, enter the following code into a file, and save it as `wc.hs`.
 
 ```haskell
 -- file: app/Ch01/wc.hs

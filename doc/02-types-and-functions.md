@@ -410,7 +410,7 @@ Assign.hs:5:1: error:
 Failed, no modules loaded.
 ```
 
-### Conditional evaluation
+### <span id="Conditional-evaluation">Conditional evaluation</span>
 
 Like many other languages, Haskell has an `if` expression. Let's see it in action, then we'll explain what's going on. As an example, we'll write our own version of the standard `drop` function. Before we begin, let's probe a little into how `drop` behaves, so we can replicate its behaviour.
 

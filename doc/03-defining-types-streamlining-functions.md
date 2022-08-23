@@ -1295,34 +1295,27 @@ A name can only appear once in a set of pattern bindings. We cannot place a vari
 
 ## Conditional evaluation with guards
 
-Pattern matching limites us to performing fixed tests of a value's shape. Although this is useful, we will often want to make a more expressive check before evaluating a function's body. Haskell provides a feature, *guards*, that give us this ability. We'll introduce the idea with a modification of the function we wrote to compare two nodes of a tree.
+Pattern matching limites us to perform fixed tests of a value's shape. Although this is useful, we will often want to make a more expressive check before evaluating a function's body. Haskell provides a feature, *guards*, that give us this ability. We'll introduce the idea with a modification of the function we wrote to compare two nodes of a tree.
 
-::: captioned-content
-::: caption BadTree.hs
-:::
-
-``` haskell nodesAreSame (Node a _ _) (Node b _ _)
-    | a == b     = Just a nodesAreSame _ _ = Nothing
+```haskell
+-- File: src/Ch03/BadTree.hs
+nodesAreSame (Node a _ _) (Node b _ _)
+    | a == b     = Just a 
+nodesAreSame _ _ = Nothing
 ```
-
-:::
 
 In this example, we use pattern matching to ensure that we are looking at values of the right shape, and a guard to compare pieces of them.
 
-A pattern can be followed by zero or more guards, each an expression of type `Bool`. A guard is introduced by a `|` symbol. This is followed by the guard expression, then an `=` symbol (or `->` if we're in a `case`
-expression), then the body to use if the guard expression evaluates to
-`True`. If a pattern matches, each guard associated with that pattern is evaluated, in the order in which they are written. If a guard succeeds,
+A pattern can be followed by zero or more guards, each an expression of type `Bool`. A guard is introduced by a `|` symbol. This is followed by the guard expression, then an `=` symbol (or `->` if we're in a `case` expression), then the body to use if the guard expression evaluates to `True`. If a pattern matches, each guard associated with that pattern is evaluated, in the order in which they are written. If a guard succeeds,
 the body affiliated with it is used as the result of the function. If no guard succeeds, pattern matching moves on to the next pattern.
 
 When a guard expression is evaluated, all of the variables mentioned in the pattern with which it is associated are bound and can be used.
 
 Here is a reworked version of our `lend` function that uses guards.
 
-::: captioned-content
-::: caption Lending.hs
-:::
-
-``` haskell lend3 amount balance
+```haskell
+-- File: src/Ch03/Lending.hs
+lend3 amount balance
      | amount <= 0            = Nothing
      | amount > reserve * 0.5 = Nothing
      | otherwise              = Just newBalance
@@ -1330,105 +1323,64 @@ Here is a reworked version of our `lend` function that uses guards.
           newBalance = balance - amount
 ```
 
-:::
-
 The special-looking guard expression `otherwise` is simply a variable bound to the value `True`, to aid readability.
 
-We can use guards anywhere that we can use patterns. Writing a function as a series of equations using pattern matching and guards can make it much clearer. Remember the `myDrop` function we defined in [the section called "Conditional evaluation"](2-types-and-functions.org::*Conditional evaluation)
+We can use guards anywhere that we can use patterns. Writing a function as a series of equations using pattern matching and guards can make it much clearer. Remember the `myDrop` function we defined in the section called ["Conditional evaluation"](02-types-and-functions.md#Conditional-evaluation)
 
-::: captioned-content
-::: caption myDrop.hs
-:::
 
-``` haskell myDrop n xs = if n <= 0 || null xs
+```haskell
+-- File: src/Ch02/MyDrop.hs
+
+myDrop n xs = if n <= 0 || null xs
               then xs
               else myDrop (n - 1) (tail xs)
 ```
 
-:::
-
 Here is a reformulation that uses patterns and guards.
 
-::: captioned-content
-::: caption myDrop.hs
-:::
-
-``` haskell niceDrop n xs | n <= 0 = xs niceDrop _ []          = []
+```haskell
+-- File: src/Ch02/MyDrop.hs
+niceDrop n xs | n <= 0 = xs 
+niceDrop _ []          = []
 niceDrop n (_:xs)      = niceDrop (n - 1) xs
 ```
-
-:::
 
 This change in style lets us enumerate *up front* the cases in which we expect a function to behave differently. If we bury the decisions inside a function as `if` expressions, the code becomes harder to read.
 
 ## Exercises
 
-1. Write a function that computes the number of elements in a list. To
-    test it, ensure that it gives the same answers as the standard
-    `length` function.
-2. Add a type signature for your function to your source file. To test
-    it, load the source file into `ghci` again.
-3. Write a function that computes the mean of a list, i.e. the sum of
-    all elements in the list divided by its length. (You may need to use
-    the `fromIntegral` function to convert the length of the list from
-    an integer into a floating point number).
-4. Turn a list into a palindrome, i.e. it should read the same both
-    backwards and forwards. For example, given the list `[1,2,3]`, your
-    function should return `[1,2,3,3,2,1]`.
-5. Write a function that determines whether its input list is a
-    palindrome.
-6. Create a function that sorts a list of lists based on the length of
-    each sublist. (You may want to look at the `sortBy` function from
-    the `Data.List` module.)
-7. Define a function that joins a list of lists together using a
-    separator value:
+1. Write a function that computes the number of elements in a list. To test it, ensure that it gives the same answers as the standard `length` function.
+2. Add a type signature for your function to your source file. To test it, load the source file into `ghci` again.
+3. Write a function that computes the mean of a list, i.e. the sum of all elements in the list divided by its length. (You may need to use the `fromIntegral` function to convert the length of the list from an integer into a floating point number).
+4. Turn a list into a palindrome, i.e. it should read the same both backwards and forwards. For example, given the list `[1,2,3]`, your function should return `[1,2,3,3,2,1]`.
+5. Write a function that determines whether its input list is a palindrome.
+6. Create a function that sorts a list of lists based on the length of each sublist. (You may want to look at the `sortBy` function from the `Data.List` module.)
+7. Define a function that joins a list of lists together using a separator value:
 
-::: captioned-content
-::: caption Intersperse.hs
-:::
+    ```haskell
+    -- File: src/Ch03/Intersperse.hs
+    intersperse :: a -> [[a]] -> [a]
+    ```
 
-``` haskell intersperse :: a -> [[a]] -> [a]
-```
+    The separator should appear between elements of the list, but should not follow the last element. Your function should behave as follows.
 
-:::
+    ```screen
+    ghci> :load Intersperse
+    [1 of 1] Compiling Main             ( Intersperse.hs, interpreted )
+    Ok, modules loaded: Main.
+    ghci> intersperse ',' []
+    ""
+    ghci> intersperse ',' ["foo"]
+    "foo"
+    ghci> intersperse ',' ["foo","bar","baz","quux"]
+    "foo,bar,baz,quux"
+    ```
 
-The separator should appear between elements of the list, but should not follow the last element. Your function should behave as follows.
-
-``` screen ghci> :load Intersperse
-[1 of 1] Compiling Main             ( Intersperse.hs, interpreted )
-Ok, modules loaded: Main.
-ghci> intersperse ',' []
-""
-ghci> intersperse ',' ["foo"]
-"foo"
-ghci> intersperse ',' ["foo","bar","baz","quux"]
-"foo,bar,baz,quux"
-```
-
-1. Using the binary tree type that we defined earlier in this chapter,
-    write a function that will determine the height of the tree. The
-    height is the largest number of hops from the root to an `Empty`.
-    For example, the tree `Empty` has height zero;
-    `Node "x" Empty Empty` has height one;
-    `Node "x" Empty (Node "y" Empty Empty)` has height two; and so on.
-2. Consider three two-dimensional points *a*, *b*, and *c*. If we look
-    at the angle formed by the line segment from *a* to *b* and the line
-    segment from *b* to *c*, it either turns left, turns right, or forms
-    a straight line. Define a `Direction` data type that lets you
-    represent these possibilities.
-3. Write a function that calculates the turn made by three 2D points
-    and returns a Direction.
-4. Define a function that takes a list of 2D points and computes the
-    direction of each successive triple. Given a list of points
-    `[a,b,c,d,e]`, it should begin by computing the turn made by
-    `[a,b,c]`, then the turn made by `[b,c,d]`, then `[c,d,e]`. Your
-    function should return a list of `Direction`.
-5. Using the code from the preceding three exercises, implement
-    Graham's scan algorithm for the convex hull of a set of 2D points.
-    You can find good description of what a [convex
-    hull](http://en.wikipedia.org/wiki/Convex_hull) is, and how the
-    [Graham scan algorithm](http://en.wikipedia.org/wiki/Graham_scan)
-    should work, on [Wikipedia](http://en.wikipedia.org/).
+8. this chapter, write a function that will determine the height of the tree. The height is the largest number of hops from the root to an `Empty`. For example, the tree `Empty` has height zero; `Node "x" Empty Empty` has height one; `Node "x" Empty (Node "y" Empty Empty)` has height two; and so on.
+9. Consider three two-dimensional points *a*, *b*, and *c*. If we look at the angle formed by the line segment from *a* to *b* and the line segment from *b* to *c*, it either turns left, turns right, or forms a straight line. Define a `Direction` data type that lets you represent these possibilities.
+10.  Write a function that calculates the turn made by three 2D points and returns a Direction.
+11.  Define a function that takes a list of 2D points and computes the direction of each successive triple. Given a list of points `[a,b,c,d,e]`, it should begin by computing the turn made by `[a,b,c]`, then the turn made by `[b,c,d]`, then `[c,d,e]`. Your function should return a list of `Direction`.
+12. Using the code from the preceding three exercises, implement Graham's scan algorithm for the convex hull of a set of 2D points. You can find good description of what a [convex hull](http://en.wikipedia.org/wiki/Convex_hull) is, and how the [Graham scan algorithm](http://en.wikipedia.org/wiki/Graham_scan) should work, on [Wikipedia](http://en.wikipedia.org/).
 
 ## Footnotes
 
