@@ -54,6 +54,7 @@ library
       Ch03.ShapeUnion
       Ch03.Tree
       Ch03.Tuple
+      Ch04.Plus
       Ch04.SplitLines
       Lib
   other-modules:

@@ -213,23 +213,19 @@ Usually, when we define or apply a function in Haskell, we write the name of the
 
 If a function or constructor takes two or more arguments, we have the option of using it in *infix* form, where we place it *between* its first and second arguments. This allows us to use functions as infix operators.
 
-To define or apply a function or value constructor using infix notation,
-we enclose its name in backtick characters (sometimes known as backquotes). Here are simple infix definitions of a function and a type.
-
-::: captioned-content
-::: caption  Plus.hs
-:::
+To define or apply a function or value constructor using infix notation, we enclose its name in backtick characters (sometimes known as backquotes). Here are simple infix definitions of a function and a type.
 
 ```haskell
+-- File: src/Ch04/Plus.hs
 a `plus` b = a + b
 
 data a `Pair` b = a `Pair` b
                   deriving (Show)
 
--- we can use the constructor either prefix or infix  foo = Pair 1 2  bar = True `Pair` "quux"
+-- we can use the constructor either prefix or infix  
+foo = Pair 1 2  
+bar = True `Pair` "quux"
 ```
-
-:::
 
 Since infix notation is purely a syntactic convenience, it does not change a function's behavior.
 
@@ -244,7 +240,7 @@ ghci> Pair True "something"
 True `Pair` "something"
 ```
 
-Infix notation can often help readability. For instance, the prelude defines a function, `elem`, that indicates whether a value is present in a list. If we use `elem` using prefix notation, it is fairly easy to read.
+Infix notation can often help readability. For instance, the prelude defines a function, `elem`, which indicates whether a value is present in a list. If we use `elem` using prefix notation, it is fairly easy to read.
 
 ```screen  
 ghci> elem 'a' "camogie" 
@@ -277,29 +273,25 @@ True
 
 There is no hard-and-fast rule that dictates when you ought to use infix versus prefix notation, although prefix notation is far more common. It's best to choose whichever makes your code more readable in a specific situation.
 
-::: NOTE Beware familiar notation in an unfamiliar language
-
-A few other programming languages use backticks, but in spite of the visual similarities, the purpose of backticks in Haskell does not remotely resemble their meaning in, for example, Perl, Python, or Unix shell scripts.
-
-The only legal thing we can do with backticks in Haskell is wrap them around the name of a function. We can't, for example, use them to enclose a complex expression whose value is a function. It might be convenient if we could, but that's not how the language is today.
-:::
+> ℹ️ **Beware familiar notation in an unfamiliar language**
+>
+> A few other programming languages use backticks, but in spite of the visual similarities, the purpose of backticks in Haskell does not remotely resemble their meaning in, for example, Perl, Python, or Unix shell scripts.
+>
+> The only legal thing we can do with backticks in Haskell is to wrap them around the name of a function. We can't, for example, use them to enclose a complex expression whose value is a function. It might be convenient if we could, but that's not how the language is today.
 
 ## Working with lists
 
 As the bread and butter of functional programming, lists deserve some serious attention. The standard prelude defines dozens of functions for dealing with lists. Many of these will be indispensable tools, so it's important that we learn them early on.
 
-For better or worse, this section is going to read a bit like a
-"laundry list" of functions. Why present so many functions at once?
-These functions are both easy to learn and absolutely ubiquitous. If we don't have this toolbox at our fingertips, we'll end up wasting time by reinventing simple functions that are already present in the standard libraries. So bear with us as we go through the list; the effort you'll save will be huge.
+For better or worse, this section is going to read a bit like a "laundry list" of functions. Why present so many functions at once? These functions are both easy to learn and absolutely ubiquitous. If we don't have this toolbox at our fingertips, we'll end up wasting time by reinventing simple functions that are already present in the standard libraries. So bear with us as we go through the list; the effort you'll save will be huge.
 
-The `Data.List` module is the "real" logical home of all standard list functions. The prelude merely re-exports a large subset of the functions exported by `Data.List`. Several useful functions in `Data.List` are
-*not* re-exported by the standard prelude. As we walk through list functions in the sections that follow, we will explicitly mention those that are only in `Data.List`.
+The `Data.List` module is the "real" logical home of all standard list functions. The prelude merely re-exports a large subset of the functions exported by `Data.List`. Several useful functions in `Data.List` are *not* re-exported by the standard prelude. As we walk through list functions in the sections that follow, we will explicitly mention those that are only in `Data.List`.
 
 ```screen  
 ghci> :module +Data.List 
 ```
 
-Because none of these functions is complex or takes more than about  three lines of Haskell to write, we'll be brief in our descriptions of  each. In fact, a quick and useful learning exercise is to write a  definition of each function after you've read about it.
+Because none of these functions is complex or takes more than about three lines of Haskell to write, we'll be brief in our descriptions of each. In fact, a quick and useful learning exercise is to write a definition of each function after you've read about it.
 
 ### Basic list manipulation
 
@@ -307,7 +299,7 @@ The `length` function tells us how many elements are in a list.
 
 ```screen  
 ghci> :type length 
-length :: [a] -> Int 
+length :: Foldable t => t a -> Int
 ghci> length [] 
 0 
 ghci> length [1,2,3] 
@@ -316,12 +308,13 @@ ghci> length "strings are lists, too"
 22
 ```
 
-If you need to determine whether a list is empty, use the `null`
-function.
+Here the type of `length` seems a little complicated, which will be explained in detail in [Chapter 6. Using Type Classes](06-using-typeclasses.md). At present, it's enough to think the list `[a]` belongs to `Foldable t => t a`.
+
+If you need to determine whether a list is empty, use the `null` function.
 
 ```screen  
 ghci> :type null 
-null :: [a] -> Bool 
+null :: Foldable t => t a -> Bool 
 ghci> null [] 
 True 
 ghci> null "plugh" 
@@ -364,14 +357,14 @@ ghci> init "bar"
 "ba"
 ```
 
-Several of the functions above behave poorly on empty lists, so be  careful if you don't know whether or not a list is empty. What form  does their misbehavior take?
+Several of the functions above behave poorly on empty lists, so be careful if you don't know whether or not a list is empty. What form  does their misbehavior take?
 
 ```screen  
 ghci> head [] 
 *** Exception: Prelude.head: empty list
 ```
 
-Try each of the above functions in `ghci`. Which ones crash when given  an empty list?
+Try each of the above functions in `ghci`. Which ones crash when given an empty list?
 
 ### Safely and sanely working with crashy functions
 
