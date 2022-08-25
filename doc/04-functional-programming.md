@@ -8,7 +8,7 @@ Our second challenge is learning our way around the standard Haskell libraries. 
 
 In this chapter, we'll introduce a number of common functional programming techniques. We'll draw upon examples from imperative languages to highlight the shift in thinking that we'll need to make. As we do so, we'll walk through some of the fundamentals of Haskell's standard libraries. We'll also intermittently cover a few more language features along the way.
 
-## A simple command line framework
+## <span id="simple-command-line-framework">A simple command line framework</span>
 
 In most of this chapter, we will concern ourselves with code that has no interaction with the outside world. To maintain our focus on practical code, we will begin by developing a gateway between our "pure" code and the outside world. Our framework simply reads the contents of one file, applies a function to the file, and writes the result to another file.
 
@@ -57,7 +57,7 @@ Some of the notation in our source file is new. The `do` keyword introduces a bl
 
 When we want to test a function that cannot talk to the outside world, we simply replace the name `id` in the code above with the name of the function we want to test. Whatever our function does, it will need to have the type `String -> String`: in other words, it must accept a string, and return a string.
 
-## Warming up: portably splitting lines of text
+## <span id="Warming-up">Warming up: portably splitting lines of text</span>
 
 Haskell provides a built-in function, `lines`, that lets us split a text string on line boundaries. It returns a list of strings with line termination characters omitted.
 
@@ -368,57 +368,43 @@ Try each of the above functions in `ghci`. Which ones crash when given an empty 
 
 ### Safely and sanely working with crashy functions
 
-When we want to use a function like `head`, where we know that it might  blow up on us if we pass in an empty list, the temptation might  initially be strong to check the length of the list before we call
-`head`. Let's construct an artificial example to illustrate our point.
-
-::: captioned-content
-::: caption  EfficientList.hs
-:::
+When we want to use a function like `head`, where we know that it might blow up on us if we pass in an empty list, the temptation might initially be strong to check the length of the list before we call `head`. Let's construct an artificial example to illustrate our point.
 
 ```haskell
+-- File: src/Ch04/EfficientList.hs
 myDumbExample xs = if length xs > 0
                    then head xs
                    else 'Z'
 ```
 
-:::
+If we're coming from a language like Perl or Python, this might seem  like a perfectly natural way to write this test. Behind the scenes, Python lists are arrays; and Perl arrays are, well, arrays. So they  necessarily know how long they are, and calling `len(foo)` or `scalar(@foo)` is a perfectly natural thing to do. But as with many other things, it's not a good idea to blindly transplant such an  assumption into Haskell.
 
-If we're coming from a language like Perl or Python, this might seem  like a perfectly natural way to write this test. Behind the scenes,
-Python lists are arrays; and Perl arrays are, well, arrays. So they  necessarily know how long they are, and calling `len(foo)` or
-`scalar(@foo)` is a perfectly natural thing to do. But as with many  other things, it's not a good idea to blindly transplant such an  assumption into Haskell.
-
-We've already seen the definition of the list algebraic data type many  times, and know that a list doesn't store its own length explicitly.
+We've already seen the definition of the list algebraic data type many times, and know that a list doesn't store its own length explicitly.
 Thus, the only way that `length` can operate is to walk the entire list.
 
-Therefore, when we only care whether or not a list is empty, calling
-`length` isn't a good strategy. It can potentially do a lot more work  than we want, if the list we're working with is finite. Since Haskell  lets us easily create infinite lists, a careless use of `length` may  even result in an infinite loop.
+Therefore, when we only care whether or not a list is empty, calling `length` isn't a good strategy. It can potentially do a lot more work  than we want, if the list we're working with is finite. Since Haskell lets us easily create infinite lists, a careless use of `length` may even result in an infinite loop.
 
-A more appropriate function to call here instead is `null`, which runs  in constant time. Better yet, using `null` makes our code indicate what  property of the list we really care about. Here are two improved ways of  expressing `myDumbExample`.
-
-::: captioned-content
-::: caption  EfficientList.hs
-:::
+A more appropriate function to call here instead is `null`, which runs in constant time. Better yet, using `null` makes our code indicate what property of the list we really care about. Here are two improved ways of  expressing `myDumbExample`.
 
 ```haskell
+-- File: src/Ch04/EfficientList.hs
 mySmartExample xs = if not (null xs)
                     then head xs
                     else 'Z'
 
-myOtherExample (x:_) = x  myOtherExample [] = 'Z'
+myOtherExample (x:_) = x  
+myOtherExample [] = 'Z'
 ```
-
-:::
 
 ### Partial and total functions
 
-Functions that only have return values defined for a subset of valid  inputs are called *partial* functions (calling `error` doesn't qualify  as returning a value!). We call functions that return valid results over  their entire input domains *total* functions.
+Functions that only have return values defined for a subset of valid  inputs are called *partial* functions (calling `error` doesn't qualify as returning a value!). We call functions that return valid results over  their entire input domains *total* functions.
 
-It's always a good idea to know whether a function you're using is  partial or total. Calling a partial function with an input that it  can't handle is probably the single biggest source of straightforward,
-avoidable bugs in Haskell programs.
+It's always a good idea to know whether a function you're using is partial or total. Calling a partial function with an input that it can't handle is probably the single biggest source of straightforward, avoidable bugs in Haskell programs.
 
-Some Haskell programmers go so far as to give partial functions names  that begin with a prefix such as `unsafe`, so that they can't shoot  themselves in the foot accidentally.
+Some Haskell programmers go so far as to give partial functions names that begin with a prefix such as `unsafe`, so that they can't shoot themselves in the foot accidentally.
 
-It's arguably a deficiency of the standard prelude that it defines  quite a few "unsafe" partial functions, like `head`, without also  providing "safe" total equivalents.
+It's arguably a deficiency of the standard prelude that it defines quite a few "unsafe" partial functions, like `head`, without also  providing "safe" total equivalents.
 
 ### More simple list manipulations
 
@@ -439,7 +425,7 @@ The `concat` function takes a list of lists, all of the same type, and  concaten
 
 ```screen  
 ghci> :type concat 
-concat :: [[a]] -> [a] 
+concat :: Foldable t => t [a] -> [a]
 ghci> concat [[1,2,3], [4,5,6]] 
 [1,2,3,4,5,6]
 ```
@@ -462,30 +448,28 @@ ghci> reverse "foo"
 "oof"
 ```
 
-For lists of `Bool`, the `and` and `or` functions generalise their  two-argument cousins, `(&&)` and `(||)`, over lists.
+For lists of `Bool`, the `and` and `or` functions generalise their two-argument cousins, `(&&)` and `(||)`, over lists.
 
 ```screen  
 ghci> :type and 
-and :: [Bool] -> Bool 
+and :: Foldable t => t Bool -> Bool
 ghci> and [True,False,True] 
 False 
 ghci> and [] 
 True 
 ghci> :type or 
-or :: [Bool] -> Bool 
+or :: Foldable t => t Bool -> Bool
 ghci> or [False,False,False,True,False] 
 True 
 ghci> or [] 
 False
 ```
 
-They have more useful cousins, `all` and `any`, which operate on lists  of any type. Each one takes a predicate as its first argument; `all`
-returns `True` if that predicate succeeds on every element of the list,
-while `any` returns `True` if the predicate succeeds on at least one  element of the list.
+They have more useful cousins, `all` and `any`, which operate on lists  of any type. Each one takes a predicate as its first argument; `all` returns `True` if that predicate succeeds on every element of the list, while `any` returns `True` if the predicate succeeds on at least one  element of the list.
 
 ```screen  
 ghci> :type all 
-all :: (a -> Bool) -> [a] -> Bool 
+all :: Foldable t => (a -> Bool) -> t a -> Bool
 ghci> all odd [1,3,5] 
 True 
 ghci> all odd [3,1,4,1,5,9,2,6,5] 
@@ -493,7 +477,7 @@ False
 ghci> all odd [] 
 True 
 ghci> :type any 
-any :: (a -> Bool) -> [a] -> Bool 
+any :: Foldable t => (a -> Bool) -> t a -> Bool 
 ghci> any even [3,1,4,1,5,9,2,6,5] 
 True 
 ghci> any even [] 
@@ -502,10 +486,7 @@ False
 
 ### Working with sublists
 
-The `take` function, which we already met in [the section called
-"Function  application"](2-types-and-functions.org::*Function application)
-consisting of the first*k*elements from a list. Its converse, `drop`,
-drops*k* elements from the start of the list.
+The `take` function, which we already met in the section called ["Function  application"](02-types-and-functions.md#Function-application) returns a sublist consisting of the first *k* elements from a list. Its converse, `drop`, drops *k* elements from the start of the list.
 
 ```screen  
 ghci> :type take 
@@ -522,8 +503,7 @@ ghci> drop 1 []
 []
 ```
 
-The `splitAt` function combines the functions of `take` and `drop`,
-returning a pair of the input list, split at the given index.
+The `splitAt` function combines the functions of `take` and `drop`, returning a pair of the input list, split at the given index.
 
 ```screen  
 ghci> :type splitAt 
@@ -532,8 +512,7 @@ ghci> splitAt 3 "foobar"
 ("foo","bar")
 ```
 
-The `takeWhile` and `dropWhile` functions take predicates: `takeWhile`
-takes elements from the beginning of a list as long as the predicate  returns `True`, while `dropWhile` drops elements from the list as long  as the predicate returns `True`.
+The `takeWhile` and `dropWhile` functions take predicates: `takeWhile` takes elements from the beginning of a list as long as the predicate  returns `True`, while `dropWhile` drops elements from the list as long  as the predicate returns `True`.
 
 ```screen  
 ghci> :type takeWhile 
@@ -546,10 +525,9 @@ ghci> dropWhile even [2,4,6,7,9,10,12]
 [7,9,10,12]
 ```
 
-Just as `splitAt` "tuples up" the results of `take` and `drop`, the  functions `break` (which we already saw in [the section called "Warming  up: portably splitting lines of  text"](4-functional-programming.org::*Warming up: portably splitting lines of text)
-and `span` tuple up the results of `takeWhile` and `dropWhile`.
+Just as `splitAt` "tuples up" the results of `take` and `drop`, the  functions `break` (which we already saw in the section called ["Warming up: portably splitting lines of  text"](#Warming-up) and `span` tuple up the results of `takeWhile` and `dropWhile`.
 
-Each function takes a predicate; `break` consumes its input while its  predicate fails, while `span` consumes while its predicate succeeds.
+Each function takes a predicate; `break` consumes its input while its predicate fails, while `span` consumes while its predicate succeeds.
 
 ```screen  
 ghci> :type span 
@@ -564,11 +542,11 @@ ghci> break even [1,3,5,6,8,9,10]
 
 ### Searching lists
 
-As we've already seen, the `elem` function indicates whether a value is  present in a list. It has a companion function, `notElem`.
+As we've already seen, the `elem` function indicates whether a value is present in a list. It has a companion function, `notElem`.
 
 ```screen  
 ghci> :type elem 
-elem :: (Eq a) => a -> [a] -> Bool 
+elem :: (Foldable t, Eq a) => a -> t a -> Bool
 ghci> 2 `elem` [5,3,2,1,1] 
 True 
 ghci> 2 `notElem` [5,3,2,1,1] 
@@ -585,7 +563,7 @@ ghci> filter odd [2,4,1,3,6,8,5,7]
 ```
 
 In `Data.List`, three predicates, `isPrefixOf`, `isInfixOf`, and
-`isSuffixOf`, let us test for the presence of sublists within a bigger  list. The easiest way to use them is using infix notation.
+`isSuffixOf`, let us test for the presence of sublists within a bigger list. The easiest way to use them is using infix notation.
 
 The `isPrefixOf` function tells us whether its left argument matches the  beginning of its right argument.
 
@@ -619,7 +597,7 @@ True
 
 ### Working with several lists at once
 
-The `zip` function takes two lists and "zips" them into a single list  of pairs. The resulting list is the same length as the shorter of the  two inputs.
+The `zip` function takes two lists and "zips" them into a single list  of pairs. The resulting list is the same length as the shorter of the two inputs.
 
 ```screen  
 ghci> :type zip 
@@ -628,7 +606,7 @@ ghci> zip [12,72,93] "zippity"
 [(12,'z'),(72,'i'),(93,'p')]
 ```
 
-More useful is `zipWith`, which takes two lists and applies a function  to each pair of elements, generating a list that is the same length as  the shorter of the two.
+More useful is `zipWith`, which takes two lists and applies a function to each pair of elements, generating a list that is the same length as the shorter of the two.
 
 ```screen  
 ghci> :type zipWith 
@@ -637,13 +615,12 @@ ghci> zipWith (+) [1,2,3] [4,5,6]
 [5,7,9]
 ```
 
-Haskell's type system makes it an interesting challenge to write  functions that take variable numbers of arguments[^1]. So if we want to  zip three lists together, we call `zip3` or `zipWith3`, and so on up to
+Haskell's type system makes it an interesting challenge to write functions that take variable numbers of arguments[^1]. So if we want to zip three lists together, we call `zip3` or `zipWith3`, and so on up to
 `zip7` and `zipWith7`.
 
 ### Special string-handling functions
 
-We've already encountered the standard `lines` function in [the section  called "Warming up: portably splitting lines of  text"](4-functional-programming.org::*Warming up: portably splitting lines of text)
-and its standard counterpart, `unlines`. Notice that `unlines` always  places a newline on the end of its result.
+We've already encountered the standard `lines` function in the section  called ["Warming up: portably splitting lines of  text"](#Warming-up) and its standard counterpart, `unlines`. Notice that `unlines` always  places a newline on the end of its result.
 
 ```screen  
 ghci> lines "foo\nbar" 
@@ -663,14 +640,7 @@ ghci> unwords ["jumps", "over", "the", "lazy", "dog"]
 
 ### Exercises
 
-1. Write your own "safe" definitions of the standard partial list
-    functions, but make sure that yours never fail. As a hint, you might
-    want to consider using the following types.
-
-    ::: captioned-content
-    ::: caption
-    exercises.hs
-    :::
+1. Write your own "safe" definitions of the standard partial list functions, but make sure that yours never fail. As a hint, you might want to consider using the following types.
 
     ```haskell
     safeHead :: [a] -> Maybe a
@@ -679,30 +649,15 @@ ghci> unwords ["jumps", "over", "the", "lazy", "dog"]
     safeInit :: [a] -> Maybe [a]
     ```
 
-    :::
-
-2. Write a function `splitWith` that acts similarly to `words`, but
-    takes a predicate and a list of any type, and splits its input list
-    on every element for which the predicate returns `False`.
-
-    ::: captioned-content
-    ::: caption
-    exercises.hs
-    :::
+2. Write a function `splitWith` that acts similarly to `words`, but takes a predicate and a list of any type, and splits its input list on every element for which the predicate returns `False`.
 
     ```haskell
     splitWith :: (a -> Bool) -> [a] -> [[a]]
     ```
 
-    :::
+3. Using the command framework from the section called ["A simple command line framework"](#simple-command-line-framework) simple command line framework) program that prints the first word of each line of its input.
 
-3. Using the command framework from [the section called "A simple
-    command line
-    framework"](4-functional-programming.org::*A simple command line framework)
-    program that prints the first word of each line of its input.
-
-4. Write a program that transposes the text in a file. For instance, it
-    should convert `"hello\nworld\n"` to `"hw\neo\nlr\nll\nod\n"`.
+4. Write a program that transposes the text in a file. For instance, it should convert `"hello\nworld\n"` to `"hw\neo\nlr\nll\nod\n"`.
 
 ## How to think about loops
 

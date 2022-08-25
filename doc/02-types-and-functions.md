@@ -111,7 +111,7 @@ ghci> [1,2,3] :: Int
 
 The combination of `::` and the type after it is called a *type signature*.
 
-## Function application
+## <span id="Function-application">Function application</span>
 
 Now that we've had our fill of data types for a while, let's turn our attention to *working* with some of the types we've seen, using functions.
 
