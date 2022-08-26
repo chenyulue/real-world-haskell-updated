@@ -10,3 +10,6 @@ foldlSum xs = foldl step 0 xs
 
 niceSum :: [Integer] -> Integer  
 niceSum xs = foldl (+) 0 xs
+
+nicerSum :: [Integer] -> Integer  
+nicerSum = foldl (+) 0

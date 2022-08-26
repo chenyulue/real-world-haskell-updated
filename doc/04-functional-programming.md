@@ -1302,36 +1302,24 @@ Due to the thunking behavior of `foldl`, it is wise to avoid this  function in r
 
 The article [[Hutton99](31-bibliography.md#Hutton99)] is an excellent and deep tutorial covering folds. It includes many examples of how to  use simple, systematic calculation techniques to turn functions that use  explicit recursion into folds.
 
-## Anonymous (lambda) functions
+## <span id="Anonymous-functions">Anonymous (lambda) functions</span>
 
 In many of the function definitions we've seen so far, we've written  short helper functions.
 
-::: captioned-content
-::: caption  Partial.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Partial.hs
 isInAny needle haystack = any inSequence haystack
     where inSequence s = needle `isInfixOf` s
 ```
 
-:::
+Haskell lets us write completely anonymous functions, which we can use  to avoid the need to give names to our helper functions. Anonymous  functions are often called "lambda" functions, in a nod to their  heritage in the lambda calculus. We introduce an anonymous function with  a backslash character, `\`, pronounced *lambda*[^2]. This is followed by  the function's arguments (which can include patterns), then an arrow `->` to introduce the function's body.
 
-Haskell lets us write completely anonymous functions, which we can use  to avoid the need to give names to our helper functions. Anonymous  functions are often called "lambda" functions, in a nod to their  heritage in the lambda calculus. We introduce an anonymous function with  a backslash character, `\`, pronounced *lambda*[^2]. This is followed by  the function's arguments (which can include patterns), then an arrow
-`->` to introduce the function's body.
-
-Lambdas are most easily illustrated by example. Here's a rewrite of
-`isInAny` using an anonymous function.
-
-::: captioned-content
-::: caption  Partial.hs
-:::
+Lambdas are most easily illustrated by example. Here's a rewrite of `isInAny` using an anonymous function.
 
 ```haskell
+-- File: src/Ch04/Partial.hs
 isInAny2 needle haystack = any (\s -> needle `isInfixOf` s) haystack
 ```
-
-:::
 
 We've wrapped the lambda in parentheses here so that Haskell can tell  where the function body ends.
 
@@ -1339,27 +1327,18 @@ Anonymous functions behave in every respect identically to functions  that have 
 
 The limitation to a single clause restricts how we can use patterns in  the definition of a lambda. We'll usually write a normal function with  several clauses to cover different pattern matching possibilities.
 
-::: captioned-content
-::: caption  Lambda.hs
-:::
-
 ```haskell
-safeHead (x:_) = Just x  safeHead _ = Nothing
+-- File: src/Ch04/Lambda.hs
+safeHead (x:_) = Just x  
+safeHead _ = Nothing
 ```
-
-:::
 
 But as we can't write multiple clauses to define a lambda, we must be  certain that any patterns we use will match.
 
-::: captioned-content
-::: caption  Lambda.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Lambda.hs
 unsafeHead = \(x:_) -> x
 ```
-
-:::
 
 This definition of `unsafeHead` will explode in our faces if we call it  with a value on which pattern matching fails.
 
@@ -1369,18 +1348,16 @@ unsafeHead :: [t] -> t
 ghci> unsafeHead [1] 
 1 
 ghci> unsafeHead [] 
-*** Exception: Lambda.hs:7:13-23: Non-exhaustive patterns in lambda
+*** Exception: Lambda.hs:7:14-24: Non-exhaustive patterns in lambda
 ```
 
 The definition type-checks, so it will compile, so the error will occur  at runtime. The moral of this story is to be careful in how you use  patterns when defining an anonymous function: make sure your patterns  can't fail!
 
 Another thing to notice about the `isInAny` and `isInAny2` functions we  showed above is that the first version, using a helper function that has  a name, is a little easier to read than the version that plops an  anonymous function into the middle. The named helper function doesn't  disrupt the "flow" of the function in which it's used, and the  judiciously chosen name gives us a little bit of information about what  the function is expected to do.
 
-In contrast, when we run across a lambda in the middle of a function  body, we have to switch gears and read its definition fairly carefully  to understand what it does. To help with readability and  maintainability, then, we tend to avoid lambdas in many situations where  we could use them to trim a few characters from a function definition.
-Very often, we'll use a partially applied function instead, resulting  in clearer and more readable code than either a lambda or an explicit  function. Don't know what a partially applied function is yet? Read on!
+In contrast, when we run across a lambda in the middle of a function  body, we have to switch gears and read its definition fairly carefully  to understand what it does. To help with readability and  maintainability, then, we tend to avoid lambdas in many situations where  we could use them to trim a few characters from a function definition. Very often, we'll use a partially applied function instead, resulting  in clearer and more readable code than either a lambda or an explicit  function. Don't know what a partially applied function is yet? Read on!
 
-We don't intend these caveats to suggest that lambdas are useless,
-merely that we ought to be mindful of the potential pitfalls when we're  thinking of using them. In later chapters, we will see that they are  often invaluable as "glue".
+We don't intend these caveats to suggest that lambdas are useless, merely that we ought to be mindful of the potential pitfalls when we're  thinking of using them. In later chapters, we will see that they are  often invaluable as "glue".
 
 ## <span id="partial-func-curry">Partial function application and currying</span>
 
@@ -1433,11 +1410,9 @@ ghci> zip3foo [1,2,3] [True,False,True]
 [('f',1,True),('o',2,False),('o',3,True)]
 ```
 
-When we pass fewer arguments to a function than the function can accept,
-we call this *partial application* of the function: we're applying the  function to only some of its arguments.
+When we pass fewer arguments to a function than the function can accept, we call this *partial application* of the function: we're applying the  function to only some of its arguments.
 
-In the example above, we have a partially applied function,
-`zip3 "foo"`, and a new function, `zip3foo`. We can see that the type  signatures of the two and their behavior are identical.
+In the example above, we have a partially applied function, `zip3 "foo"`, and a new function, `zip3foo`. We can see that the type  signatures of the two and their behavior are identical.
 
 This applies just as well if we fix two arguments, giving us a function  of just one argument.
 
@@ -1451,47 +1426,32 @@ ghci> zip3foobar [1,2]
 [('f','b',1),('o','a',2)]
 ```
 
-Partial function application lets us avoid writing tiresome throwaway  functions. It's often more useful for this purpose than the anonymous  functions we introduced in [the section called "Anonymous (lambda)
-functions"](4-functional-programming.org::*Anonymous (lambda) functions)
-the `isInAny` function we defined there, here's how we'd use a  partially applied function instead of a named helper function or a  lambda.
-
-::: captioned-content
-::: caption  Partial.hs
-:::
+Partial function application lets us avoid writing tiresome throwaway  functions. It's often more useful for this purpose than the anonymous  functions we introduced in the section called ["Anonymous (lambda) functions"](#Anonymous-functions). Looking back at the `isInAny` function we defined there, here's how we'd use a  partially applied function instead of a named helper function or a  lambda.
 
 ```haskell
+-- File: src/Ch04/Partial.hs
 isInAny3 needle haystack = any (isInfixOf needle) haystack
 ```
-
-:::
 
 Here, the expression `isInfixOf needle` is the partially applied  function. We're taking the function `isInfixOf`, and "fixing" its  first argument to be the `needle` variable from our parameter list. This  gives us a partially applied function that has exactly the same type and  behavior as the helper and lambda in our earlier definitions.
 
 Partial function application is named *currying*, after the logician  Haskell Curry (for whom the Haskell language is named).
 
-As another example of currying in use, let's return to the list-summing  function we wrote in [the section called "The left  fold"](4-functional-programming.org::*The left fold)
-
-::: captioned-content
-::: caption  Sum.hs
-:::
+As another example of currying in use, let's return to the list-summing  function we wrote in the section called ["The left  fold"](#left-fold)
 
 ```haskell
-niceSum :: [Integer] -> Integer  niceSum xs = foldl (+) 0 xs
+-- File: src/Ch04/Sum.hs
+niceSum :: [Integer] -> Integer  
+niceSum xs = foldl (+) 0 xs
 ```
-
-:::
 
 We don't need to fully apply `foldl`; we can omit the list `xs` from  both the parameter list and the parameters to `foldl`, and we'll end up  with a more compact function that has the same type.
 
-::: captioned-content
-::: caption  Sum.hs
-:::
-
 ```haskell
-nicerSum :: [Integer] -> Integer  nicerSum = foldl (+) 0
+-- File: src/Ch04/Sum.hs
+nicerSum :: [Integer] -> Integer  
+nicerSum = foldl (+) 0
 ```
-
-:::
 
 ### Sections
 
@@ -1531,20 +1491,14 @@ False
 
 If we use this style, we can further improve the readability of our  earlier `isInAny3` function.
 
-::: captioned-content
-::: caption  Partial.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Partial.hs
 isInAny4 needle haystack = any (needle `isInfixOf`) haystack
 ```
 
-:::
-
 ## As-patterns
 
-Haskell's `tails` function, in the `Data.List` module, generalises the
-`tail` function we introduced earlier. Instead of returning one "tail"
+Haskell's `tails` function, in the `Data.List` module, generalises the `tail` function we introduced earlier. Instead of returning one "tail"
 of a list, it returns *all* of them.
 
 ```screen  
@@ -1557,31 +1511,23 @@ ghci> tails "foobar"
 ["foobar","oobar","obar","bar","ar","r",""]
 ```
 
-Each of these strings is a *suffix* of the initial string, so `tails`
-produces a list of all suffixes, plus an extra empty list at the end. It  always produces that extra empty list, even when its input list is  empty.
+Each of these strings is a *suffix* of the initial string, so `tails` produces a list of all suffixes, plus an extra empty list at the end. It  always produces that extra empty list, even when its input list is  empty.
 
 ```screen  
 ghci> tails [] 
+[[]]
 ```
 
-What if we want a function that behaves like `tails`, but which *only*
-returns the non-empty suffixes? One possibility would be for us to write  our own version by hand. We'll use a new piece of notation, the `@`
-symbol.
-
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
+What if we want a function that behaves like `tails`, but which *only* returns the non-empty suffixes? One possibility would be for us to write  our own version by hand. We'll use a new piece of notation, the `@` symbol.
 
 ```haskell
+-- File: src/Ch04/SuffixTree.hs
 suffixes :: [a] -> [[a]]
 suffixes xs@(_:xs') = xs : suffixes xs'
 suffixes _ = []
 ```
 
-:::
-
-The pattern `xs @ (_ : xs')` is called an *as-pattern*, and it means
-"bind the variable `xs` to the value that matches the right side of the
+The pattern `xs @ (_ : xs')` is called an *as-pattern*, and it means "bind the variable `xs` to the value that matches the right side of the
 `@` symbol".
 
 In our example, if the pattern after the "@" matches, `xs` will be  bound to the entire list that matched, and `xs'` to all but the head of  the list (we used the wild card `_` pattern to indicate that we're not  interested in the value of the head of the list).
@@ -1595,38 +1541,27 @@ ghci> suffixes "foo"
 
 The as-pattern makes our code more readable. To see how it helps, let us  compare a definition that lacks an as-pattern.
 
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
-
 ```haskell
+-- File: src/Ch04/SuffixTree.hs
 noAsPattern :: [a] -> [[a]]
-noAsPattern (x:xs) = (x:xs) : noAsPattern xs  noAsPattern _ = []
+noAsPattern (x:xs) = (x:xs) : noAsPattern xs  
+noAsPattern _      = []
 ```
-
-:::
 
 Here, the list that we've deconstructed in the pattern match just gets  put right back together in the body of the function.
 
-As-patterns have a more practical use than simple readability: they can  help us to share data instead of copying it. In our definition of
-`noAsPattern`, when we match `(x : xs)`, we construct a new copy of it  in the body of our function. This causes us to allocate a new list node  at run time. That may be cheap, but it isn't free. In contrast, when we  defined `suffixes`, we reused the value `xs` that we matched with our  as-pattern. Since we reuse an existing value, we avoid a little  allocation.
+As-patterns have a more practical use than simple readability: they can  help us to share data instead of copying it. In our definition of `noAsPattern`, when we match `(x : xs)`, we construct a new copy of it in the body of our function. This causes us to allocate a new list node at run time. That may be cheap, but it isn't free. In contrast, when we defined `suffixes`, we reused the value `xs` that we matched with our  as-pattern. Since we reuse an existing value, we avoid a little  allocation.
 
 ## Code reuse through composition
 
 It seems a shame to introduce a new function, `suffixes`, that does  almost the same thing as the existing `tails` function. Surely we can do  better?
 
-Recall the `init` function we introduced in [the section called
-"Working with  lists"](4-functional-programming.org::*Working with lists) last element  of a list.
-
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
+Recall the `init` function we introduced in the section called ["Working with  lists"](#working-with-lists): it returns all but the last element  of a list.
 
 ```haskell
+-- File: src/Ch04/SuffixTree.hs
 suffixes2 xs = init (tails xs)
 ```
-
-:::
 
 This `suffixes2` function behaves identically to `suffixes`, but it's a  single line of code.
 
@@ -1638,52 +1573,32 @@ ghci> suffixes2 "foo"
 If we take a step back, we see the glimmer of a pattern here: we're  applying a function, then applying another function to its result.
 Let's turn that pattern into a function definition.
 
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
-
 ```haskell
-compose :: (b -> c) -> (a -> b) -> a -> c  compose f g x = f (g x)
+-- File: src/Ch04/SuffixTree.hs
+compose :: (b -> c) -> (a -> b) -> a -> c  
+compose f g x = f (g x)
 ```
-
-:::
 
 We now have a function, `compose`, that we can use to "glue" two other  functions together.
 
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
-
 ```haskell
+-- File: src/Ch04/SuffixTree.hs
 suffixes3 xs = compose init tails xs
 ```
 
-:::
-
 Haskell's automatic currying lets us drop the `xs` variable, so we can  make our definition even shorter.
 
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
-
 ```haskell
+-- File: src/Ch04/SuffixTree.hs
 suffixes4 = compose init tails
 ```
 
-:::
-
-Fortunately, we don't need to write our own `compose` function.
-Plugging functions into each other like this is so common that the  Prelude provides function composition via the `(.)` operator.
-
-::: captioned-content
-::: caption  SuffixTree.hs
-:::
+Fortunately, we don't need to write our own `compose` function. Plugging functions into each other like this is so common that the  Prelude provides function composition via the `(.)` operator.
 
 ```haskell
+-- File: src/Ch04/SuffixTree.hs
 suffixes5 = init . tails
 ```
-
-:::
 
 The `(.)` operator isn't a special piece of language syntax; it's just  a normal operator.
 

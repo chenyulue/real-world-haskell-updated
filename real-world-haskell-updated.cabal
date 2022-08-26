@@ -59,9 +59,12 @@ library
       Ch04.Filter
       Ch04.Fold
       Ch04.IntParse
+      Ch04.Lambda
       Ch04.Map
+      Ch04.Partial
       Ch04.Plus
       Ch04.SplitLines
+      Ch04.SuffixTree
       Ch04.Sum
       Lib
   other-modules:
