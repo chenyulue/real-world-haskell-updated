@@ -279,7 +279,7 @@ There is no hard-and-fast rule that dictates when you ought to use infix versus 
 >
 > The only legal thing we can do with backticks in Haskell is to wrap them around the name of a function. We can't, for example, use them to enclose a complex expression whose value is a function. It might be convenient if we could, but that's not how the language is today.
 
-## Working with lists
+## <span id="working-with-lists">Working with lists</span>
 
 As the bread and butter of functional programming, lists deserve some serious attention. The standard prelude defines dozens of functions for dealing with lists. Many of these will be indispensable tools, so it's important that we learn them early on.
 
@@ -661,104 +661,77 @@ ghci> unwords ["jumps", "over", "the", "lazy", "dog"]
 
 ## How to think about loops
 
-Unlike traditional languages, Haskell has neither a `for` loop nor a
-`while` loop. If we've got a lot of data to process, what do we use  instead? There are several possible answers to this question.
+Unlike traditional languages, Haskell has neither a `for` loop nor a `while` loop. If we've got a lot of data to process, what do we use instead? There are several possible answers to this question.
 
-### Explicit recursion
+### <span id="explicit-recursion">Explicit recursion</span>
 
-``` {.c org-language="C"}
+```c
 int as_int(char *str)
 {
     int acc; /* accumulate the partial result */
 
     for (acc = 0; isdigit(*str); str++) {
-    acc = acc * 10 + (*str - '0');
+        acc = acc * 10 + (*str - '0');
     }
 
     return acc;
 }
 ```
 
-Given that Haskell doesn't have any looping constructs, how should we  think about representing a fairly straightforward piece of code like  this?
+Given that Haskell doesn't have any looping constructs, how should we  think about representing a fairly straightforward piece of code like this?
 
-We don't have to start off by writing a type signature, but it helps to  remind us of what we're working with.
-
-::: captioned-content
-::: caption  IntParse.hs
-:::
+We don't have to start off by writing a type signature, but it helps to remind us of what we're working with.
 
 ```haskell
+-- File: src/Ch04/IntParse.hs
 import Data.Char (digitToInt) -- we'll need ord shortly
 
 asInt :: String -> Int
 ```
 
-:::
-
-The C code computes the result incrementally as it traverses the string;
-the Haskell code can do the same. However, in Haskell, we can express  the equivalent of a loop as a function. We'll call ours `loop` just to  keep things nice and explicit.
-
-::: captioned-content
-::: caption  IntParse.hs
-:::
+The C code computes the result incrementally as it traverses the string; the Haskell code can do the same. However, in Haskell, we can express the equivalent of a loop as a function. We'll call ours `loop` just to  keep things nice and explicit.
 
 ```haskell
+-- File: src/Ch04/IntParse.hs
 loop :: Int -> String -> Int
 
 asInt xs = loop 0 xs
 ```
 
-:::
+That first parameter to `loop` is the accumulator variable we'll be using. Passing zero into it is equivalent to initialising the `acc` variable in C at the beginning of the loop.
 
-That first parameter to `loop` is the accumulator variable we'll be  using. Passing zero into it is equivalent to initialising the `acc`
-variable in C at the beginning of the loop.
+Rather than leap into blazing code, let's think about the data we have to work with. Our familiar `String` is just a synonym for `[Char]`, a list of characters. The easiest way for us to get the traversal right is to think about the structure of a list: it's either empty, or a single element followed by the rest of the list.
 
-Rather than leap into blazing code, let's think about the data we have  to work with. Our familiar `String` is just a synonym for `[Char]`, a  list of characters. The easiest way for us to get the traversal right is  to think about the structure of a list: it's either empty, or a single  element followed by the rest of the list.
-
-We can express this structural thinking directly by pattern matching on  the list type's constructors. It's often handy to think about the easy  cases first: here, that means we will consider the empty-list case.
-
-::: captioned-content
-::: caption  IntParse.hs
-:::
+We can express this structural thinking directly by pattern matching on the list type's constructors. It's often handy to think about the easy cases first: here, that means we will consider the empty-list case.
 
 ```haskell
+-- File: src/Ch04/IntParse.hs
+
 loop acc [] = acc
 ```
 
-:::
+An empty list doesn't just mean "the input string is empty"; it's  also the case we'll encounter when we traverse all the way to the end  of a non-empty list. So we don't want to "error out" if we see an empty list. Instead, we should do something sensible. Here, the sensible thing is to terminate the loop, and return our accumulated value.
 
-An empty list doesn't just mean "the input string is empty"; it's  also the case we'll encounter when we traverse all the way to the end  of a non-empty list. So we don't want to "error out" if we see an  empty list. Instead, we should do something sensible. Here, the sensible  thing is to terminate the loop, and return our accumulated value.
-
-The other case we have to consider arises when the input list is not  empty. We need to do something with the current element of the list, and  something with the rest of the list.
-
-::: captioned-content
-::: caption  IntParse.hs
-:::
+The other case we have to consider arises when the input list is not empty. We need to do something with the current element of the list, and something with the rest of the list.
 
 ```haskell
+-- File: src/Ch04/IntParse.hs
 loop acc (x:xs) = let acc' = acc * 10 + digitToInt x
                   in loop acc' xs
 ```
 
-:::
+We compute a new value for the accumulator, and give it the name `acc'`. We then call the `loop` function again, passing it the updated value `acc'` and the rest of the input list; this is equivalent to the loop starting another round in C.
 
-We compute a new value for the accumulator, and give it the name `acc'`.
-We then call the `loop` function again, passing it the updated value
-`acc'` and the rest of the input list; this is equivalent to the loop  starting another round in C.
-
-::: NOTE  Single quotes in variable names
-
-Remember, a single quote is a legal character to use in a Haskell  variable name, and is pronounced "prime". There's a common idiom in  Haskell programs involving a variable, say `foo`, and another variable,
-say `foo'`. We can usually assume that `foo'` is somehow related to
+> ℹ️ **Single quotes in variable names**
+>
+> Remember, a single quote is a legal character to use in a Haskell  variable name, and is pronounced "prime". There's a common idiom in  Haskell programs involving a variable, say `foo`, and another variable, say `foo'`. We can usually assume that `foo'` is somehow related to
 `foo`. It's often a new value for `foo`, as in our code above.
+>
+> Sometimes we'll see this idiom extended, such as `foo''`. Since keeping  track of the number of single quotes tacked onto the end of a name  rapidly becomes tedious, use of more than two in a row is thankfully  rare. Indeed, even one single quote can be easy to miss, which can lead  to confusion on the part of readers. It might be better to think of the  use of single quotes as a coding convention that you should be able to  recognize, and less as one that you should actually follow.
 
-Sometimes we'll see this idiom extended, such as `foo''`. Since keeping  track of the number of single quotes tacked onto the end of a name  rapidly becomes tedious, use of more than two in a row is thankfully  rare. Indeed, even one single quote can be easy to miss, which can lead  to confusion on the part of readers. It might be better to think of the  use of single quotes as a coding convention that you should be able to  recognize, and less as one that you should actually follow.
-:::
+Each time the `loop` function calls itself, it has a new value for the  accumulator, and it consumes one element of the input list. Eventually, it's going to hit the end of the list, at which time the `[]` pattern  will match, and the recursive calls will cease.
 
-Each time the `loop` function calls itself, it has a new value for the  accumulator, and it consumes one element of the input list. Eventually,
-it's going to hit the end of the list, at which time the `[]` pattern  will match, and the recursive calls will cease.
-
-How well does this function work? For positive integers, it's perfectly  cromulent.
+How well does this function work? For positive integers, it's perfectly cromulent.
 
 ```screen  
 ghci> asInt "33" 
@@ -774,32 +747,29 @@ ghci> asInt "potato"
 *** Exception: Char.digitToInt: not a digit 'p'
 ```
 
-We'll defer fixing our function's shortcomings to
-[*Q:1*]{.spurious-link target="Exercise 4.1"}.
+We'll defer fixing our function's shortcomings to [*Q:1*](#Q1).
 
-Because the last thing that `loop` does is simply call itself, it's an  example of a tail recursive function. There's another common idiom in  this code, too. Thinking about the structure of the list, and handling  the empty and non-empty cases separately, is a kind of approach called
-*structural recursion*.
+Because the last thing that `loop` does is simply call itself, it's an example of a tail recursive function. There's another common idiom in  this code, too. Thinking about the structure of the list, and handling  the empty and non-empty cases separately, is a kind of approach called *structural recursion*.
 
-We call the non-recursive case (when the list is empty) the *base case*
-(sometimes the *terminating case*). We'll see people refer to the case  where the function calls itself as the recursive case (surprise!), or  they might give a nod to mathematical induction and call it the
+We call the non-recursive case (when the list is empty) the *base case* (sometimes the *terminating case*). We'll see people refer to the case  where the function calls itself as the recursive case (surprise!), or  they might give a nod to mathematical induction and call it the
 *inductive case*.
 
 As a useful technique, structural recursion is not confined to lists; we  can use it on other algebraic data types, too. We'll have more to say  about it later.
 
-::: NOTE  In an imperative language, a loop executes in constant space. Lacking  loops, we use tail recursive functions in Haskell instead. Normally, a  recursive function allocates some space each time it applies itself, so  it knows where to return to.
-
-Clearly, a recursive function would be at a huge disadvantage relative  to a loop if it allocated memory for every recursive application: this  would require linear space instead of constant space. However,
-functional language implementations detect uses of tail recursion, and  transform tail recursive calls to run in constant space; this is called
-*tail call optimisation*, abbreviated TCO.
-
-Few imperative language implementations perform TCO; this is why using  any kind of ambitiously functional style in an imperative language often  leads to memory leaks and poor performance.
-:::
+> ℹ️ **What's the big deal about tail recursion?**
+> 
+> In an imperative language, a loop executes in constant space. Lacking  loops, we use tail recursive functions in Haskell instead. Normally, a  recursive function allocates some space each time it applies itself, so it knows where to return to.
+>
+> Clearly, a recursive function would be at a huge disadvantage relative  to a loop if it allocated memory for every recursive application: this would require linear space instead of constant space. However,
+functional language implementations detect uses of tail recursion, and transform tail recursive calls to run in constant space; this is called *tail call optimisation*, abbreviated TCO.
+>
+> Few imperative language implementations perform TCO; this is why using  any kind of ambitiously functional style in an imperative language often  leads to memory leaks and poor performance.
 
 ### Transforming every piece of input
 
 Consider another C function, `square`, which squares every element in an  array.
 
-``` {.c org-language="C"}
+```c
 void square(double *out, const double *in, size_t length)
 {
     for (size_t i = 0; i < length; i++) {
@@ -808,27 +778,23 @@ void square(double *out, const double *in, size_t length)
 }
 ```
 
-This contains a straightforward and common kind of loop, one that does  exactly the same thing to every element of its input array. How might we  write this loop in Haskell?
-
-::: captioned-content
-::: caption  Map.hs
-:::
+This contains a straightforward and common kind of loop, one that does exactly the same thing to every element of its input array. How might we write this loop in Haskell?
 
 ```haskell
+-- File: src/Ch04/Map.hs
 square :: [Double] -> [Double]
 
-square (x:xs) = x*x : square xs  square []     = []
+square (x:xs) = x*x : square xs  
+square []     = []
 ```
 
-:::
+Our `square` function consists of two pattern matching equations. The  first "deconstructs" the beginning of a non-empty list, to get its  head and tail. It squares the first element, then puts that on the front  of a new list, which is constructed by calling `square` on the remainder of the empty list. The second equation ensures that `square` halts when it reaches the end of the input list.
 
-Our `square` function consists of two pattern matching equations. The  first "deconstructs" the beginning of a non-empty list, to get its  head and tail. It squares the first element, then puts that on the front  of a new list, which is constructed by calling `square` on the remainder  of the empty list. The second equation ensures that `square` halts when  it reaches the end of the input list.
+The effect of `square` is to construct a new list that's the same length as its input list, with every element in the input list substituted with its square in the output list.
 
-The effect of `square` is to construct a new list that's the same  length as its input list, with every element in the input list  substituted with its square in the output list.
+Here's another such C loop, one that ensures that every letter in a string is converted to uppercase.
 
-Here's another such C loop, one that ensures that every letter in a  string is converted to uppercase.
-
-``` {.c org-language="C"}
+```c
 #include <ctype.h>
 
 char *uppercase(const char *in)
@@ -847,28 +813,21 @@ char *uppercase(const char *in)
 
 Let's look at a Haskell equivalent.
 
-::: captioned-content
-::: caption  Map.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Map.hs
 import Data.Char (toUpper)
 
 upperCase :: String -> String
 
-upperCase (x:xs) = toUpper x : upperCase xs  upperCase []     = []
+upperCase (x:xs) = toUpper x : upperCase xs 
+upperCase []     = []
 ```
 
-:::
+Here, we're importing the `toUpper` function from the standard `Data.Char` module, which contains lots of useful functions for working  with `Char` data.
 
-Here, we're importing the `toUpper` function from the standard
-`Data.Char` module, which contains lots of useful functions for working  with `Char` data.
+Our `upperCase` function follows a similar pattern to our earlier `square` function. It terminates with an empty list when the input list is empty; and when the input isn't empty, it calls `toUpper` on the  first element, then constructs a new list cell from that and the result  of calling itself on the rest of the input list.
 
-Our `upperCase` function follows a similar pattern to our earlier
-`square` function. It terminates with an empty list when the input list  is empty; and when the input isn't empty, it calls `toUpper` on the  first element, then constructs a new list cell from that and the result  of calling itself on the rest of the input list.
-
-These examples follow a common pattern for writing recursive functions  over lists in Haskell. The *base case* handles the situation where our  input list is empty. The *recursive case* deals with a non-empty list;
-it does something with the head of the list, and calls itself  recursively on the tail.
+These examples follow a common pattern for writing recursive functions  over lists in Haskell. The *base case* handles the situation where our  input list is empty. The *recursive case* deals with a non-empty list; it does something with the head of the list, and calls itself  recursively on the tail.
 
 ### Mapping over a list
 
@@ -876,18 +835,13 @@ The `square` and `upperCase` functions that we just defined produce new  lists t
 
 Here are our `square` and `upperCase` functions rewritten to use `map`.
 
-::: captioned-content
-::: caption  Map.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Map.hs
 square2 xs = map squareOne xs
     where squareOne x = x * x
 
 upperCase2 xs = map toUpper xs
 ```
-
-:::
 
 This is our first close look at a function that takes another function  as its argument. We can learn a lot about what `map` does by simply  inspecting its type.
 
@@ -898,33 +852,25 @@ map :: (a -> b) -> [a] -> [b]
 
 The signature tells us that `map` takes two arguments. The first is a  function that takes a value of one type, `a`, and returns a value of  another type, `b`.
 
-Since `map` takes a function as argument, we refer to it as a
-*higher-order* function. (In spite of the name, there's nothing  mysterious about higher-order functions; it's just a term for functions  that take other functions as arguments, or return functions.)
+Since `map` takes a function as argument, we refer to it as a *higher-order* function. (In spite of the name, there's nothing  mysterious about higher-order functions; it's just a term for functions  that take other functions as arguments, or return functions.)
 
-Since `map` abstracts out the pattern common to our `square` and
-`upperCase` functions so that we can reuse it with less boilerplate, we  can look at what those functions have in common and figure out how to  implement it ourselves.
-
-::: captioned-content
-::: caption  Map.hs
-:::
+Since `map` abstracts out the pattern common to our `square` and `upperCase` functions so that we can reuse it with less boilerplate, we can look at what those functions have in common and figure out how to  implement it ourselves.
 
 ```haskell
+-- File: src/Ch04/Map.hs
 myMap :: (a -> b) -> [a] -> [b]
 
-myMap f (x:xs) = f x : myMap f xs  myMap _ _      = []
+myMap f (x:xs) = f x : myMap f xs  
+myMap _ _      = []
 ```
 
-:::
-
-::: NOTE  What are those wild cards doing there?
-
-If you're new to functional programming, the reasons for matching  patterns in certain ways won't always be obvious. For example, in the  definition of `myMap` above, the first equation binds the function  we're mapping to the variable `f`, but the second uses wild cards for  both parameters. What's going on?
-
-We use a wild card in place of `f` to indicate that we aren't calling  the function `f` on the right hand side of the equation. What about the  list parameter? The list type has two constructors. We've already  matched on the non-empty constructor in the first equation that defines
-`myMap`. By elimination, the constructor in the second equation is  necessarily the empty list constructor, so there's no need to perform a  match to see what its value really is.
-
-As a matter of style, it is fine to use wild cards for well known simple  types like lists and `Maybe`. For more complicated or less familiar  types, it can be safer and more readable to name constructors  explicitly.
-:::
+> ℹ️ **What are those wild cards doing there?**
+>
+> If you're new to functional programming, the reasons for matching  patterns in certain ways won't always be obvious. For example, in the  definition of `myMap` above, the first equation binds the function  we're mapping to the variable `f`, but the second uses wild cards for  both parameters. What's going on?
+>
+> We use a wild card in place of `f` to indicate that we aren't calling  the function `f` on the right hand side of the equation. What about the  list parameter? The list type has two constructors. We've already  matched on the non-empty constructor in the first equation that defines `myMap`. By elimination, the constructor in the second equation is necessarily the empty list constructor, so there's no need to perform a  match to see what its value really is.
+>
+> As a matter of style, it is fine to use wild cards for well known simple  types like lists and `Maybe`. For more complicated or less familiar  types, it can be safer and more readable to name constructors  explicitly.
 
 We try out our `myMap` function to give ourselves some assurance that it  behaves similarly to the standard `map`.
 
@@ -938,25 +884,20 @@ ghci> map negate [1,2,3]
 [-1,-2,-3]
 ```
 
-This pattern of spotting a repeated idiom, then abstracting it so we can  reuse (and write less!) code, is a common aspect of Haskell programming.
-While abstraction isn't unique to Haskell, higher order functions make  it remarkably easy.
+This pattern of spotting a repeated idiom, then abstracting it so we can  reuse (and write less!) code, is a common aspect of Haskell programming. While abstraction isn't unique to Haskell, higher order functions make  it remarkably easy.
 
-### Selecting pieces of input
+### <span id="selecting-pieces-of-input">Selecting pieces of input</span>
 
 Another common operation on a sequence of data is to comb through it for  elements that satisfy some criterion. Here's a function that walks a  list of numbers and returns those that are odd. Our code has a recursive  case that's a bit more complex than our earlier functions: it only puts  a number in the list it returns if the number is odd. Using a guard  expresses this nicely.
 
-::: captioned-content
-::: caption  Filter.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Filter.hs
 oddList :: [Int] -> [Int]
 
 oddList (x:xs) | odd x     = x : oddList xs
-               | otherwise = oddList xs  oddList _                  = []
+               | otherwise = oddList xs  
+oddList _                  = []
 ```
-
-:::
 
 Let's see that in action.
 
@@ -965,8 +906,7 @@ ghci> oddList [1,1,2,3,5,8,13,21,34]
 [1,1,3,5,13,21]
 ```
 
-Once again, this idiom is so common that the prelude defines a function,
-`filter`, which we have already introduced. It removes the need for  boilerplate code to recurse over the list.
+Once again, this idiom is so common that the prelude defines a function, `filter`, which we have already introduced. It removes the need for boilerplate code to recurse over the list.
 
 ```screen  
 ghci> :type filter 
@@ -975,30 +915,25 @@ ghci> filter odd [3,1,4,1,5,9,2,6,5]
 [3,1,1,5,9,5]
 ```
 
-The `filter` function takes a predicate and applies it to every element  in its input list, returning a list of only those for which the  predicate evaluates to `True`. We'll revisit `filter` again soon, in
-[the section called "Folding from the  right"](4-functional-programming.org::*Folding from the right)
+The `filter` function takes a predicate and applies it to every element  in its input list, returning a list of only those for which the  predicate evaluates to `True`. We'll revisit `filter` again soon, in the section called ["Folding from the right"](#Folding-right)
 
 ### Computing one answer over a collection
 
-Another common thing to do with a collection is reduce it to a single  value. A simple example of this is summing the values of a list.
-
-::: captioned-content
-::: caption  Sum.hs
-:::
+Another common thing to do with a collection is to reduce it to a single value. A simple example of this is summing the values of a list.
 
 ```haskell
+-- File: src/Ch04/Sum.hs
 mySum xs = helper 0 xs
     where helper acc (x:xs) = helper (acc + x) xs
           helper acc _      = acc
 ```
 
-:::
+Our `helper` function is tail recursive, and uses an accumulator  parameter, `acc`, to hold the current partial sum of the list. As we already saw with `asInt`, this is a "natural" way to represent a loop in a pure functional language.
 
-Our `helper` function is tail recursive, and uses an accumulator  parameter, `acc`, to hold the current partial sum of the list. As we  already saw with `asInt`, this is a "natural" way to represent a loop  in a pure functional language.
+For something a little more complicated, let's take a look at the  Adler-32 checksum. This is a popular checksum algorithm; it concatenates two 16-bit checksums into a single 32-bit checksum. The first checksum is the sum of all input bytes, plus one. The second is the sum of all intermediate values of the first checksum. In each case, the sums are computed modulo 65521. Here's a straightforward, unoptimised Java implementation. (It's safe to skip it if you don't read Java.)
 
-For something a little more complicated, let's take a look at the  Adler-32 checksum. This is a popular checksum algorithm; it concatenates  two 16-bit checksums into a single 32-bit checksum. The first checksum  is the sum of all input bytes, plus one. The second is the sum of all  intermediate values of the first checksum. In each case, the sums are  computed modulo 65521. Here's a straightforward, unoptimised Java  implementation. (It's safe to skip it if you don't read Java.)
-
-``` java  public class Adler32
+```java  
+public class Adler32
 {
     private static final int base = 65521;
 
@@ -1016,13 +951,10 @@ For something a little more complicated, let's take a look at the  Adler-32 chec
 }
 ```
 
-Although Adler-32 is a simple checksum, this code isn't particularly  easy to read on account of the bit-twiddling involved. Can we do any  better with a Haskell implementation?
-
-::: captioned-content
-::: caption  Adler32.hs
-:::
+Although Adler-32 is a simple checksum, this code isn't particularly easy to read on account of the bit-twiddling involved. Can we do any better with a Haskell implementation?
 
 ```haskell
+-- File: src/Ch04/Adler32.hs
 import Data.Char (ord)
 import Data.Bits (shiftL, (.&.), (.|.))
 
@@ -1035,20 +967,14 @@ adler32 xs = helper 1 0 xs
           helper a b _      = (b `shiftL` 16) .|. a
 ```
 
-:::
+This code isn't exactly easier to follow than the Java code, but let's look at what's going on. First of all, we've introduced some new functions. The `shiftL` function implements a logical shift left; `(.&.)` provides bitwise "and"; and `(.|.)` provides bitwise "or".
 
-This code isn't exactly easier to follow than the Java code, but let's  look at what's going on. First of all, we've introduced some new  functions. The `shiftL` function implements a logical shift left;
-`(.&.)` provides bitwise "and"; and `(.|.)` provides bitwise "or".
+Once again, our `helper` function is tail recursive. We've turned the two variables we updated on every loop iteration in Java into accumulator parameters. When our recursion terminates on the end of the input list, we compute our checksum and return it.
 
-Once again, our `helper` function is tail recursive. We've turned the  two variables we updated on every loop iteration in Java into  accumulator parameters. When our recursion terminates on the end of the  input list, we compute our checksum and return it.
-
-If we take a step back, we can restructure our Haskell `adler32` to more  closely resemble our earlier `mySum` function. Instead of two  accumulator parameters, we can use a pair as the accumulator.
-
-::: captioned-content
-::: caption  Adler32.hs
-:::
+If we take a step back, we can restructure our Haskell `adler32` to more closely resemble our earlier `mySum` function. Instead of two accumulator parameters, we can use a pair as the accumulator.
 
 ```haskell
+-- File: src/Ch04/Adler32.hs
 adler32_try2 xs = helper (1,0) xs
     where helper (a,b) (x:xs) =
               let a' = (a + (ord x .&. 0xff)) `mod` base
@@ -1057,68 +983,45 @@ adler32_try2 xs = helper (1,0) xs
           helper (a,b) _      = (b `shiftL` 16) .|. a
 ```
 
-:::
+Why would we want to make this seemingly meaningless structural change? Because as we've already seen with `map` and `filter`, we can extract the common behavior shared by `mySum` and `adler32_try2` into a higher-order function. We can describe this behavior as "do something  to every element of a list, updating an accumulator as we go, and returning the accumulator when we're done".
 
-Why would we want to make this seemingly meaningless structural change?
-Because as we've already seen with `map` and `filter`, we can extract  the common behavior shared by `mySum` and `adler32_try2` into a  higher-order function. We can describe this behavior as "do something  to every element of a list, updating an accumulator as we go, and  returning the accumulator when we're done".
+This kind of function is called a *fold*, because it "folds up" a  list. There are two kinds of fold over lists, `foldl` for folding from the left (the start) and `foldr` for folding from the right (the end).
 
-This kind of function is called a *fold*, because it "folds up" a  list. There are two kinds of fold over lists, `foldl` for folding from  the left (the start) and `foldr` for folding from the right (the end).
-
-### The left fold
+### <span id="left-fold">The left fold</span>
 
 Here is the definition of `foldl`.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 foldl :: (a -> b -> a) -> a -> [b] -> a
 
-foldl step zero (x:xs) = foldl step (step zero x) xs  foldl _    zero []     = zero
+foldl step zero (x:xs) = foldl step (step zero x) xs  
+foldl _    zero []     = zero
 ```
 
-:::
+The `foldl` function takes a "step" function, an initial value for its  accumulator, and a list. The "step" takes an accumulator and an  element from the list, and returns a new accumulator value. All `foldl` does is call the "stepper" on the current accumulator and an element of the list, and passes the new accumulator value to itself recursively to consume the rest of the list.
 
-The `foldl` function takes a "step" function, an initial value for its  accumulator, and a list. The "step" takes an accumulator and an  element from the list, and returns a new accumulator value. All `foldl`
-does is call the "stepper" on the current accumulator and an element  of the list, and passes the new accumulator value to itself recursively  to consume the rest of the list.
-
-We refer to `foldl` as a "left fold" because it consumes the list from  left (the head) to right.
+We refer to `foldl` as a "left fold" because it consumes the list from left (the head) to right.
 
 Here's a rewrite of `mySum` using `foldl`.
 
-::: captioned-content
-::: caption  Sum.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Sum.hs
 foldlSum xs = foldl step 0 xs
     where step acc x = acc + x
 ```
 
-:::
-
-That local function `step` just adds two numbers, so let's simply use  the addition operator instead, and eliminate the unnecessary `where`
-clause.
-
-::: captioned-content
-::: caption  Sum.hs
-:::
+That local function `step` just adds two numbers, so let's simply use the addition operator instead, and eliminate the unnecessary `where` clause.
 
 ```haskell
-niceSum :: [Integer] -> Integer  niceSum xs = foldl (+) 0 xs
+-- File: src/Ch04/Sum.hs
+niceSum :: [Integer] -> Integer  
+niceSum xs = foldl (+) 0 xs
 ```
 
-:::
-
-Notice how much simpler this code is than our original `mySum`? We're  no longer using explicit recursion, because `foldl` takes care of that  for us. We've simplified our problem down to two things: what the  initial value of the accumulator should be (the second parameter to
-`foldl`), and how to update the accumulator (the `(+)` function). As an  added bonus, our code is now shorter, too, which makes it easier to  understand.
+Notice how much simpler this code is than our original `mySum`? We're no longer using explicit recursion, because `foldl` takes care of that for us. We've simplified our problem down to two things: what the  initial value of the accumulator should be (the second parameter to `foldl`), and how to update the accumulator (the `(+)` function). As an added bonus, our code is now shorter, too, which makes it easier to understand.
 
 Let's take a deeper look at what `foldl` is doing here, by manually  writing out each step in its evaluation when we call `niceSum [1,2,3]`.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
 
 ```haskell
 foldl (+) 0 (1:2:3:[])
@@ -1128,57 +1031,38 @@ foldl (+) 0 (1:2:3:[])
           ==           (((0 + 1) + 2) + 3)
 ```
 
-:::
-
 We can rewrite `adler32_try2` using `foldl` to let us focus on the  details that are important.
 
-::: captioned-content
-::: caption  Adler32.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Adler32.hs
 adler32_foldl xs = let (a, b) = foldl step (1, 0) xs
                    in (b `shiftL` 16) .|. a
     where step (a, b) x = let a' = a + (ord x .&. 0xff)
                           in (a' `mod` base, (a' + b) `mod` base)
 ```
 
-:::
-
-Here, our accumulator is a pair, so the result of `foldl` will be, too.
-We pull the final accumulator apart when `foldl` returns, and  bit-twiddle it into a "proper" checksum.
+Here, our accumulator is a pair, so the result of `foldl` will be, too. We pull the final accumulator apart when `foldl` returns, and bit-twiddle it into a "proper" checksum.
 
 ### Why use folds, maps, and filters?
 
-A quick glance reveals that `adler32_foldl` isn't really any shorter  than `adler32_try2`. Why should we use a fold in this case? The  advantage here lies in the fact that folds are extremely common in  Haskell, and they have regular, predictable behavior.
+A quick glance reveals that `adler32_foldl` isn't really any shorter  than `adler32_try2`. Why should we use a fold in this case? The advantage here lies in the fact that folds are extremely common in Haskell, and they have regular, predictable behavior.
 
 This means that a reader with a little experience will have an easier  time understanding a use of a fold than code that uses explicit  recursion. A fold isn't going to produce any surprises, but the  behavior of a function that recurses explicitly isn't immediately  obvious. Explicit recursion requires us to read closely to understand  exactly what's going on.
 
-This line of reasoning applies to other higher-order library functions,
-including those we've already seen, `map` and `filter`. Because  they're library functions with well-defined behavior, we only need to  learn what they do once, and we'll have an advantage when we need to  understand any code that uses them. These improvements in readability  also carry over to writing code. Once we start to think with higher  order functions in mind, we'll produce concise code more quickly.
+This line of reasoning applies to other higher-order library functions, including those we've already seen, `map` and `filter`. Because  they're library functions with well-defined behavior, we only need to  learn what they do once, and we'll have an advantage when we need to  understand any code that uses them. These improvements in readability  also carry over to writing code. Once we start to think with higher  order functions in mind, we'll produce concise code more quickly.
 
-### Folding from the right
+### <span id="Folding-right">Folding from the right</span>
 
 The counterpart to `foldl` is `foldr`, which folds from the right of a  list.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
-foldr :: (a -> b -> b) -> b -> [a] -> b  foldr step zero (x:xs) = step x (foldr step zero xs)
+foldr :: (a -> b -> b) -> b -> [a] -> b  
+foldr step zero (x:xs) = step x (foldr step zero xs)
 foldr _    zero []     = zero
 ```
 
-:::
-
 Let's follow the same manual evaluation process with
-`foldr (+) 0 [1,2,3]` as we did with `niceSum` in [the section called
-"The left fold"](4-functional-programming.org::*The left fold)
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+`foldr (+) 0 [1,2,3]` as we did with `niceSum` in the section called ["The left fold"](#left-fold)
 
 ```haskell
 foldr (+) 0 (1:2:3:[])
@@ -1188,34 +1072,19 @@ foldr (+) 0 (1:2:3:[])
           == 1 + (2 + (3 + 0))
 ```
 
-:::
+The difference between `foldl` and `foldr` should be clear from looking  at where the parentheses and the "empty list" elements show up. With `foldl`, the empty list element is on the left, and all the parentheses group to the left. With `foldr`, the `zero` value is on the right, and the parentheses group to the right.
 
-The difference between `foldl` and `foldr` should be clear from looking  at where the parentheses and the "empty list" elements show up. With
-`foldl`, the empty list element is on the left, and all the parentheses  group to the left. With `foldr`, the `zero` value is on the right, and  the parentheses group to the right.
-
-There is a lovely intuitive explanation of how `foldr` works: it  replaces the empty list with the `zero` value, and every constructor in  the list with an application of the step function.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+There is a lovely intuitive explanation of how `foldr` works: it replaces the empty list with the `zero` value, and every constructor in the list with an application of the step function.
 
 ```haskell
 1 : (2 : (3 : []))
 1 + (2 + (3 + 0 ))
 ```
 
-:::
-
-At first glance, `foldr` might seem less useful than `foldl`: what use  is a function that folds from the right? But consider the prelude's
-`filter` function, which we last encountered in [the section called
-"Selecting pieces of  input"](4-functional-programming.org::*Selecting pieces of input)
-`filter` using explicit recursion, it will look something like this.
-
-::: captioned-content
-::: caption  Filter.hs
-:::
+At first glance, `foldr` might seem less useful than `foldl`: what use  is a function that folds from the right? But consider the prelude's `filter` function, which we last encountered in the section called ["Selecting pieces of  input"](#selecting-pieces-of-input). If we write `filter` using explicit recursion, it will look something like this.
 
 ```haskell
+-- File: src/Ch04/Fold.hs
 filter :: (a -> Bool) -> [a] -> [a]
 filter p []   = []
 filter p (x:xs)
@@ -1223,78 +1092,56 @@ filter p (x:xs)
     | otherwise = filter p xs
 ```
 
-:::
-
-Perhaps surprisingly, though, we can write `filter` as a fold, using
-`foldr`.
-
-::: captioned-content
-::: caption  Filter.hs
-:::
+Perhaps surprisingly, though, we can write `filter` as a fold, using `foldr`.
 
 ```haskell
+-- File: src/Ch04/Fold.hs
+
 myFilter p xs = foldr step [] xs
     where step x ys | p x       = x : ys
                     | otherwise = ys
 ```
 
-:::
-
-This is the sort of definition that could cause us a headache, so let's  examine it in a little depth. Like `foldl`, `foldr` takes a function and  a base case (what to do when the input list is empty) as arguments. From  reading the type of `filter`, we know that our `myFilter` function must  return a list of the same type as it consumes, so the base case should  be a list of this type, and the `step` helper function must return a  list.
+This is the sort of definition that could cause us a headache, so let's  examine it in a little depth. Like `foldl`, `foldr` takes a function and  a base case (what to do when the input list is empty) as arguments. From  reading the type of `filter`, we know that our `myFilter'` function must  return a list of the same type as it consumes, so the base case should  be a list of this type, and the `step` helper function must return a  list.
 
 Since we know that `foldr` calls `step` on one element of the input list  at a time, with the accumulator as its second argument, what `step` does  must be quite simple. If the predicate returns `True`, it pushes that  element onto the accumulated list; otherwise, it leaves the list  untouched.
 
-The class of functions that we can express using `foldr` is called
-*primitive recursive*. A surprisingly large number of list manipulation  functions are primitive recursive. For example, here's `map` written in  terms of `foldr`.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+The class of functions that we can express using `foldr` is called *primitive recursive*. A surprisingly large number of list manipulation  functions are primitive recursive. For example, here's `map` written in  terms of `foldr`.
 
 ```haskell
+-- File: src/Ch04/Fold.hs
+
 myMap :: (a -> b) -> [a] -> [b]
 myMap f xs = foldr step [] xs
     where step x ys = f x : ys
 ```
 
-:::
-
 In fact, we can even write `foldl` using `foldr`!
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
-myFoldl :: (a -> b -> a) -> a -> [b] -> a  myFoldl f z xs = foldr step id xs z
+-- File: src/Ch04/Fold.hs
+
+myFoldl :: (a -> b -> a) -> a -> [b] -> a  
+myFoldl f z xs = foldr step id xs z
     where step x g a = g (f a x)
 ```
 
-:::
+> 💡 **Understanding foldl in terms of foldr**
+>
+>If you want to set yourself a solid challenge, try to follow the above  definition of `foldl` using `foldr`. Be warned: this is not trivial! You  might want to have the following tools at hand: some headache pills and a glass of water, `ghci` (so that you can find out what the `id` function does), and a pencil and paper.
+>
+>You will want to follow the same manual evaluation process as we outlined above to see what `foldl` and `foldr` were really doing. If you  get stuck, you may find the task easier after reading the section  called ["Partial function application and  currying"](#partial-func-curry)
 
-::: TIP  Understanding foldl in terms of foldr
 
-If you want to set yourself a solid challenge, try to follow the above  definition of `foldl` using `foldr`. Be warned: this is not trivial! You  might want to have the following tools at hand: some headache pills and  a glass of water, `ghci` (so that you can find out what the `id`
-function does), and a pencil and paper.
+Returning to our earlier intuitive explanation of what `foldr` does, another useful way to think about it is that it *transforms* its input  list. Its first two arguments are "what to do with each head/tail element of the list", and "what to substitute for the end of the list".
 
-You will want to follow the same manual evaluation process as we  outlined above to see what `foldl` and `foldr` were really doing. If you  get stuck, you may find the task easier after reading [the section  called "Partial function application and  currying"](4-functional-programming.org::*Partial function application and currying)
-:::
-
-Returning to our earlier intuitive explanation of what `foldr` does,
-another useful way to think about it is that it *transforms* its input  list. Its first two arguments are "what to do with each head/tail  element of the list", and "what to substitute for the end of the  list".
-
-The "identity" transformation with `foldr` thus replaces the empty  list with itself, and applies the list constructor to each head/tail  pair:
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+The "identity" transformation with `foldr` thus replaces the empty list with itself, and applies the list constructor to each head/tail  pair:
 
 ```haskell
+-- File: src/Ch04/Fold.hs
 identity :: [a] -> [a]
 identity xs = foldr (:) [] xs
 ```
-
-:::
 
 It transforms a list into a copy of itself.
 
@@ -1310,18 +1157,14 @@ ghci> [1,2,3] ++ [4,5,6]
 [1,2,3,4,5,6]
 ```
 
-All we have to do to append a list onto another is substitute that  second list for the end of our first list.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+All we have to do to append a list onto another is substitute that second list for the end of our first list.
 
 ```haskell
+-- File: src/Ch04/Fold.hs
+
 append :: [a] -> [a] -> [a]
 append xs ys = foldr (:) ys xs
 ```
-
-:::
 
 Let's try this out.
 
@@ -1330,23 +1173,16 @@ ghci> append [1,2,3] [4,5,6]
 [1,2,3,4,5,6]
 ```
 
-Here, we replace each list constructor with another list constructor,
-but we replace the empty list with the list we want to append onto the  end of our first list.
+Here, we replace each list constructor with another list constructor, but we replace the empty list with the list we want to append onto the end of our first list.
 
-As our extended treatment of folds should indicate, the `foldr` function  is nearly as important a member of our list-programming toolbox as the  more basic list functions we saw in [the section called "Working with  lists"](4-functional-programming.org::*Working with lists) produce a  list incrementally, which makes it useful for writing lazy data  processing code.
+As our extended treatment of folds should indicate, the `foldr` function  is nearly as important a member of our list-programming toolbox as the  more basic list functions we saw in the section called ["Working with  lists"](#working-with-lists) produce a  list incrementally, which makes it useful for writing lazy data  processing code.
 
 ### Left folds, laziness, and space leaks
 
-To keep our initial discussion simple, we used `foldl` throughout most  of this section. This is convenient for testing, but we will never use
-`foldl` in practice.
+To keep our initial discussion simple, we used `foldl` throughout most  of this section. This is convenient for testing, but we will never use `foldl` in practice.
 
-The reason has to do with Haskell's non-strict evaluation. If we apply
-`foldl (+) [1,2,3]`, it evaluates to the expression
+The reason has to do with Haskell's non-strict evaluation. If we apply `foldl (+) [1,2,3]`, it evaluates to the expression
 `(((0 + 1) + 2) + 3)`. We can see this occur if we revisit the way in  which the function gets expanded.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
 
 ```haskell
 foldl (+) 0 (1:2:3:[])
@@ -1356,32 +1192,25 @@ foldl (+) 0 (1:2:3:[])
           ==           (((0 + 1) + 2) + 3)
 ```
 
-:::
+The final expression will not be evaluated to `6` until its value is  demanded. Before it is evaluated, it must be stored as a thunk. Not  surprisingly, a thunk is more expensive to store than a single number, and the more complex the thunked expression, the more space it needs. For something cheap like arithmetic, thunking an expresion is more  computationally expensive than evaluating it immediately. We thus end up  paying both in space and in time.
 
-The final expression will not be evaluated to `6` until its value is  demanded. Before it is evaluated, it must be stored as a thunk. Not  surprisingly, a thunk is more expensive to store than a single number,
-and the more complex the thunked expression, the more space it needs.
-For something cheap like arithmetic, thunking an expresion is more  computationally expensive than evaluating it immediately. We thus end up  paying both in space and in time.
-
-When GHC is evaluating a thunked expression, it uses an internal stack  to do so. Because a thunked expression could potentially be infinitely  large, GHC places a fixed limit on the maximum size of this stack.
-Thanks to this limit, we can try a large thunked expression in `ghci`
-without needing to worry that it might consume all of memory.
+When GHC is evaluating a thunked expression, it uses an internal stack to do so. Because a thunked expression could potentially be infinitely  large, GHC places a fixed limit on the maximum size of this stack. Thanks to this limit, we can try a large thunked expression in `ghci` without needing to worry that it might consume all of memory.
 
 ```screen  
 ghci> foldl (+) 0 [1..1000] 
 500500
 ```
 
-From looking at the expansion above, we can surmise that this creates a  thunk that consists of 1000 integers and 999 applications of `(+)`.
-That's a lot of memory and effort to represent a single number! With a  larger expression, although the size is still modest, the results are  more dramatic.
+From looking at the expansion above, we can surmise that this creates a  thunk that consists of 1000 integers and 999 applications of `(+)`. That's a lot of memory and effort to represent a single number! With a  larger expression, although the size is still modest, the results are  more dramatic.
 
 ```screen  
 ghci> foldl (+) 0 [1..1000000] 
 *** Exception: stack overflow
 ```
 
-On small expressions, `foldl` will work correctly but slowly, due to the  thunking overhead that it incurs. We refer to this invisible thunking as  a *space leak*, because our code is operating normally, but using far  more memory than it should.
+On small expressions, `foldl` will work correctly but slowly, due to the thunking overhead that it incurs. We refer to this invisible thunking as  a *space leak*, because our code is operating normally, but using far more memory than it should.
 
-On larger expressions, code with a space leak will simply fail, as  above. A space leak with `foldl` is a classic roadblock for new Haskell  programmers. Fortunately, this is easy to avoid.
+On larger expressions, code with a space leak will simply fail, as above. A space leak with `foldl` is a classic roadblock for new Haskell programmers. Fortunately, this is easy to avoid.
 
 The `Data.List` module defines a function named `foldl'` that is similar  to `foldl`, but does not build up thunks. The difference in behavior  between the two is immediately obvious.
 
@@ -1393,29 +1222,15 @@ ghci> foldl' (+) 0 [1..1000000]
 500000500000
 ```
 
-Due to the thunking behavior of `foldl`, it is wise to avoid this  function in real programs: even if it doesn't fail outright, it will be  unnecessarily inefficient. Instead, import `Data.List` and use `foldl'`.
+Due to the thunking behavior of `foldl`, it is wise to avoid this  function in real programs: even if it doesn't fail outright, it will be unnecessarily inefficient. Instead, import `Data.List` and use `foldl'`.
 
 ### Exercises
 
-```{=org}
-#+NAME: Exercise 4.1
-```
-
-1. Use a fold (choosing the appropriate fold will make your code much
-    simpler) to rewrite and improve upon the `asInt` function from [the
-    section called "Explicit
-    recursion"](4-functional-programming.org::*Explicit recursion)
-
-    ::: captioned-content
-    ::: caption
-    exercises.hs
-    :::
+1. <span id="Q1">Use a fold</span> (choosing the appropriate fold will make your code much simpler) to rewrite and improve upon the `asInt` function from the section called ["Explicit recursion"](#explicit-recursion)
 
     ```haskell
     asInt_fold :: String -> Int
     ```
-
-    :::
 
     Your function should behave as follows.
 
@@ -1427,8 +1242,7 @@ Due to the thunking behavior of `foldl`, it is wise to avoid this  function in r
     1798
     ```
 
-    Extend your function to handle the following kinds of exceptional
-    conditions by calling `error`.
+    Extend your function to handle the following kinds of exceptional conditions by calling `error`.
 
     ```screen
     ghci> asInt_fold "" 
@@ -1443,20 +1257,12 @@ Due to the thunking behavior of `foldl`, it is wise to avoid this  function in r
     564616105916946374
     ```
 
-2. The `asInt_fold` function uses `error`, so its callers cannot handle
-    errors. Rewrite it to fix this problem.
-
-    ::: captioned-content
-    ::: caption
-    exercises.hs
-    :::
+2. The `asInt_fold` function uses `error`, so its callers cannot handle errors. Rewrite it to fix this problem.
 
     ```haskell
     type ErrorMessage = String
     asInt_either :: String -> Either ErrorMessage Int
     ```
-
-    :::
 
     ```screen
     ghci> asInt_either "33" 
@@ -1465,56 +1271,36 @@ Due to the thunking behavior of `foldl`, it is wise to avoid this  function in r
     Left "non-digit 'o'"
     ```
 
-3. The Prelude function `concat` concatenates a list of lists into a
-    single list, and has the following type.
-
-    ::: captioned-content
-    ::: caption
-    exercises.hs
-    :::
+3. The Prelude function `concat` concatenates a list of lists into a single list, and has the following type.
 
     ```haskell
     concat :: [[a]] -> [a]
     ```
 
-    :::
-
     Write your own definition of `concat` using `foldr`.
 
-4. Write your own definition of the standard `takeWhile` function,
-    first using explicit recursion, then `foldr`.
+4. Write your own definition of the standard `takeWhile` function, first using explicit recursion, then `foldr`.
 
-5. The `Data.List` module defines a function, `groupBy`, which has the
-    following type.
-
-    ::: captioned-content
-    ::: caption
-    exercises.hs
-    :::
+5. The `Data.List` module defines a function, `groupBy`, which has the following type.
 
     ```haskell
     groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
     ```
 
-    :::
+    Use `ghci` to load the `Data.List` module and figure out what `groupBy` does, then write your own implementation using a fold.
 
-    Use `ghci` to load the `Data.List` module and figure out what
-    `groupBy` does, then write your own implementation using a fold.
-
-6. How many of the following prelude functions can you rewrite using
-    list folds?
+6. How many of the following prelude functions can you rewrite using list folds?
 
     - `any`
     - `cycle`
     - `words`
     - `unlines`
 
-    For those functions where you can use either `foldl'` or `foldr`,
-    which is more appropriate in each case?
+    For those functions where you can use either `foldl'` or `foldr`, which is more appropriate in each case?
 
 ### Further reading
 
-The article \[[Hutton99](bibliography.org::Hutton99)\] is an excellent  and deep tutorial covering folds. It includes many examples of how to  use simple, systematic calculation techniques to turn functions that use  explicit recursion into folds.
+The article [[Hutton99](31-bibliography.md#Hutton99)] is an excellent and deep tutorial covering folds. It includes many examples of how to  use simple, systematic calculation techniques to turn functions that use  explicit recursion into folds.
 
 ## Anonymous (lambda) functions
 
