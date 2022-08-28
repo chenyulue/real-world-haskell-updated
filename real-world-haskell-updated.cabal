@@ -55,6 +55,7 @@ library
       Ch03.Tree
       Ch03.Tuple
       Ch04.Adler32
+      Ch04.Dlts
       Ch04.EfficientList
       Ch04.Filter
       Ch04.Fold
@@ -66,6 +67,7 @@ library
       Ch04.SplitLines
       Ch04.SuffixTree
       Ch04.Sum
+      Ch05.SimpleJSON
       Lib
   other-modules:
       Paths_real_world_haskell_updated

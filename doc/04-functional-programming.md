@@ -366,7 +366,7 @@ ghci> head []
 
 Try each of the above functions in `ghci`. Which ones crash when given an empty list?
 
-### Safely and sanely working with crashy functions
+### <span id="safely-and-sanely-working-with-crashy-functions">Safely and sanely working with crashy functions</span>
 
 When we want to use a function like `head`, where we know that it might blow up on us if we pass in an empty list, the temptation might initially be strong to check the length of the list before we call `head`. Let's construct an artificial example to illustrate our point.
 
@@ -1638,20 +1638,18 @@ ghci> :type isUpper . head
 isUpper . head :: [Char] -> Bool
 ```
 
-This function returns `True` if a word begins with a capital letter (try  it in `ghci`), so `filter (isUpper . head)` returns a list of `Strings`
-containing only words that begin with capital letters.
+This function returns `True` if a word begins with a capital letter (try  it in `ghci`), so `filter (isUpper . head)` returns a list of `Strings` containing only words that begin with capital letters.
 
 ```screen  
 ghci> :type filter (isUpper . head) 
 filter (isUpper . head) :: [[Char]] -> [[Char]]
 ```
 
-Since this expression returns a list, all that remains is calculate the  length of the list, which we do with another composition.
+Since this expression returns a list, all that remains is to calculate the length of the list, which we do with another composition.
 
-Here's another example, drawn from a real application. We want to  extract a list of macro names from a C header file shipped with
-`libpcap`, a popular network packet filtering library. The header file  contains a large number definitions of the following form.
+Here's another example, drawn from a real application. We want to  extract a list of macro names from a C header file shipped with `libpcap`, a popular network packet filtering library. The header file  contains a large number definitions of the following form.
 
-``` {.c org-language="C"}
+```c
 #define DLT_EN10MB      1       /* Ethernet (10Mb) */
 #define DLT_EN3MB       2       /* Experimental Ethernet (3Mb) */
 #define DLT_AX25        3       /* Amateur Radio AX.25 */
@@ -1659,11 +1657,8 @@ Here's another example, drawn from a real application. We want to  extract a lis
 
 Our goal is to extract names such as `DLT_EN10MB` and `DLT_AX25`.
 
-::: captioned-content
-::: caption  dlts.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Dlts.hs
 import Data.List (isPrefixOf)
 
 dlts :: String -> [String]
@@ -1671,30 +1666,21 @@ dlts :: String -> [String]
 dlts = foldr step [] . lines
 ```
 
-:::
-
 We treat an entire file as a string, split it up with `lines`, then  apply `foldr step []` to the resulting list of lines. The `step` helper  function operates on a single line.
 
-::: captioned-content
-::: caption  dlts.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Dlts.hs
 where step l ds
         | "#define DLT_" `isPrefixOf` l = secondWord l : ds
         | otherwise                     = ds
       secondWord = head . tail . words
 ```
 
-:::
-
-If we match a macro definition with our guard expression, we cons the  name of the macro onto the head of the list we're returning; otherwise,
-we leave the list untouched.
+If we match a macro definition with our guard expression, we cons the  name of the macro onto the head of the list we're returning; otherwise, we leave the list untouched.
 
 While the individual functions in the body of `secondWord` are by now  familiar to us, it can take a little practice to piece together a chain  of compositions like this. Let's walk through the procedure.
 
-Once again, we proceed from right to left. The first function is
-`words`.
+Once again, we proceed from right to left. The first function is `words`.
 
 ```screen  
 ghci> :type words 
@@ -1716,7 +1702,7 @@ ghci> (tail . words) "#define DLT_CHAOS    5"
 ["DLT_CHAOS","5"]
 ```
 
-Finally, applying `head` to the result of `drop 1 . words` will give us  the name of our macro.
+Finally, applying `head` to the result of `tail . words` will give us  the name of our macro.
 
 ```screen  
 ghci> :type head . tail . words 
@@ -1727,23 +1713,17 @@ ghci> (head . tail . words) "#define DLT_CHAOS    5"
 
 ### Use your head wisely
 
-After warning against unsafe list functions in [the section called
-"Safely and sanely working with crashy  functions"](4-functional-programming.org::*Safely and sanely working with crashy functions)
-here we are calling both `head` and `tail`, two of those unsafe list  functions. What gives?
+After warning against unsafe list functions in the section called ["Safely and sanely working with crashy  functions"](#safely-and-sanely-working-with-crashy-functions) here we are calling both `head` and `tail`, two of those unsafe list  functions. What gives?
 
-In this case, we can assure ourselves by inspection that we're safe  from a runtime failure. The pattern guard in the definition of `step`
-contains two words, so when we apply `words` to any string that makes it  past the guard, we'll have a list of at least two elements, `"#define"`
-and some macro beginning with `"DLT_"`.
+In this case, we can assure ourselves by inspection that we're safe  from a runtime failure. The pattern guard in the definition of `step` contains two words, so when we apply `words` to any string that makes it  past the guard, we'll have a list of at least two elements, `"#define"` and some macro beginning with `"DLT_"`.
 
-This the kind of reasoning we ought to do to convince ourselves that our  code won't explode when we call partial functions. Don't forget our  earlier admonition: calling unsafe functions like this requires care,
-and can often make our code more fragile in subtle ways. If we for some  reason modified the pattern guard to only contain one word, we could  expose ourselves to the possibility of a crash, as the body of the  function assumes that it will receive two words.
+This the kind of reasoning we ought to do to convince ourselves that our  code won't explode when we call partial functions. Don't forget our  earlier admonition: calling unsafe functions like this requires care, and can often make our code more fragile in subtle ways. If we for some  reason modified the pattern guard to only contain one word, we could  expose ourselves to the possibility of a crash, as the body of the  function assumes that it will receive two words.
 
 ## Tips for writing readable code
 
 So far in this chapter, we've come across two tempting looking features  of Haskell: tail recursion and anonymous functions. As nice as these  are, we don't often want to use them.
 
-Many list manipulation operations can be most easily expressed using  combinations of library functions such as `map`, `take`, and `filter`.
-Without a doubt, it takes some practice to get used to using these. In  return for our initial investment, we can write and read code more  quickly, and with fewer bugs.
+Many list manipulation operations can be most easily expressed using  combinations of library functions such as `map`, `take`, and `filter`. Without a doubt, it takes some practice to get used to using these. In  return for our initial investment, we can write and read code more  quickly, and with fewer bugs.
 
 The reason for this is simple. A tail recursive function definition has  the same problem as a loop in an imperative language: it's completely  general. It might perform some filtering, some mapping, or who knows  what else. We are forced to look in detail at the entire definition of  the function to see what it's really doing. In contrast, `map` and most  other list manipulation functions do only *one* thing. We can take for  granted what these simple building blocks do, and focus on the idea the  code is trying to express, not the minute details of how it's  manipulating its inputs.
 
@@ -1755,78 +1735,55 @@ As for anonymous functions, they tend to interrupt the "flow" of  reading a piec
 
 The `foldl` function that we discussed earlier is not the only place  where space leaks can arise in Haskell code. We will use it to  illustrate how non-strict evaluation can sometimes be problematic, and  how to solve the difficulties that can arise.
 
-::: TIP  Do you need to know all of this right now?
-
-It is perfectly reasonable to skip this section until you encounter a  space leak "in the wild". Provided you use `foldr` if you are  generating a list, and `foldl'` instead of `foldl` otherwise, space  leaks are unlikely to bother you in practice for a while.
-:::
+> 💡 **Do you need to know all of this right now?**
+>
+> It is perfectly reasonable to skip this section until you encounter a  space leak "in the wild". Provided you use `foldr` if you are  generating a list, and `foldl'` instead of `foldl` otherwise, space  leaks are unlikely to bother you in practice for a while.
 
 ### Avoiding space leaks with seq
 
-We refer to an expression that is not evaluated lazily as *strict*, so
-`foldl'` is a strict left fold. It bypasses Haskell's usual non-strict  evaluation through the use of a special function named `seq`.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+We refer to an expression that is not evaluated lazily as *strict*, so `foldl'` is a strict left fold. It bypasses Haskell's usual non-strict  evaluation through the use of a special function named `seq`.
 
 ```haskell
-foldl' _    zero []     = zero  foldl' step zero (x:xs) =
+-- File: src/Ch04/Fold.hs
+foldl' _    zero []     = zero  
+foldl' step zero (x:xs) =
     let new = step zero x
     in  new `seq` foldl' step new xs
 ```
-
-:::
 
 This `seq` function has a peculiar type, hinting that it is not playing  by the usual rules.
 
 ```screen  
 ghci> :type seq 
-seq :: a -> t -> t
+seq :: a -> b -> b
 ```
 
 It operates as follows: when a `seq` expression is evaluated, it forces  its first argument to be evaluated, then returns its second argument. It  doesn't actually do anything with the first argument: `seq` exists  solely as a way to force that value to be evaluated. Let's walk through  a brief application to see what happens.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 foldl' (+) 1 (2:[])
 ```
 
-:::
-
 This expands as follows.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
-let new = 1 + 2  in new `seq` foldl' (+) new []
+-- File: src/Ch04/Fold.hs
+let new = 1 + 2  
+in new `seq` foldl' (+) new []
 ```
-
-:::
 
 The use of `seq` forcibly evaluates `new` to `3`, and returns its second  argument.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 foldl' (+) 3 []
 ```
 
-:::
-
 We end up with the following result.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 3
 ```
 
@@ -1836,90 +1793,63 @@ Thanks to `seq`, there are no thunks in sight.
 
 ### Learning to use seq
 
-Without some direction, there is an element of mystery to using `seq`
-effectively. Here are some useful rules for using it well.
+Without some direction, there is an element of mystery to using `seq` effectively. Here are some useful rules for using it well.
 
 To have any effect, a `seq` expression must be the first thing evaluated  in an expression.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 -- incorrect: seq is hidden by the application of someFunc
--- since someFunc will be evaluated first, seq may occur too late  hiddenInside x y = someFunc (x `seq` y)
+-- since someFunc will be evaluated first, seq may occur too late  
+hiddenInside x y = someFunc (x `seq` y)
 
--- incorrect: a variation of the above mistake  hiddenByLet x y z = let a = x `seq` someFunc y
+-- incorrect: a variation of the above mistake  
+hiddenByLet x y z = let a = x `seq` someFunc y
                     in anotherFunc a z
 
--- correct: seq will be evaluated first, forcing evaluation of x  onTheOutside x y = x `seq` someFunc y
+-- correct: seq will be evaluated first, forcing evaluation of x  
+onTheOutside x y = x `seq` someFunc y
 ```
 
-:::
-
-To strictly evaluate several values, chain applications of `seq`
-together.
-
-::: captioned-content
-::: caption  Fold.hs
-:::
+To strictly evaluate several values, chain applications of `seq` together.
 
 ```haskell
+-- File: src/Ch04/Fold.hs
 chained x y z = x `seq` y `seq` someFunc z
 ```
 
-:::
-
 A common mistake is to try to use `seq` with two unrelated expressions.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 badExpression step zero (x:xs) =
     seq (step zero x)
         (badExpression step (step zero x) xs)
 ```
 
-:::
+Here, the apparent intention is to evaluate `step zero x` strictly. Since the expression is duplicated in the body of the function, strictly  evaluating the first instance of it will have no effect on the second. The use of `let` from the definition of `foldl'` above shows how to  achieve this effect correctly.
 
-Here, the apparent intention is to evaluate `step zero x` strictly.
-Since the expression is duplicated in the body of the function, strictly  evaluating the first instance of it will have no effect on the second.
-The use of `let` from the definition of `foldl'` above shows how to  achieve this effect correctly.
-
-When evaluating an expression, `seq` stops as soon as it reaches a  constructor. For simple types like numbers, this means that it will  evaluate them completely. Algebraic data types are a different story.
-Consider the value `(1 + 2) : (3 + 4) : []`. If we apply `seq` to this,
-it will evaluate the `(1 + 2)` thunk. Since it will stop when it reaches  the first `(:)` constructor, it will have no effect on the second thunk.
-The same is true for tuples: `seq ((1 + 2), (3 + 4)) True` will do  nothing to the thunks inside the pair, since it immediately hits the  pair's constructor.
+When evaluating an expression, `seq` stops as soon as it reaches a  constructor. For simple types like numbers, this means that it will  evaluate them completely. Algebraic data types are a different story. Consider the value `(1 + 2) : (3 + 4) : []`. If we apply `seq` to this,
+it will evaluate the `(1 + 2)` thunk. Since it will stop when it reaches  the first `(:)` constructor, it will have no effect on the second thunk. The same is true for tuples: `seq ((1 + 2), (3 + 4)) True` will do  nothing to the thunks inside the pair, since it immediately hits the  pair's constructor.
 
 If necessary, we can use normal functional programming techniques to  work around these limitations.
 
-::: captioned-content
-::: caption  Fold.hs
-:::
-
 ```haskell
+-- File: src/Ch04/Fold.hs
 strictPair (a,b) = a `seq` b `seq` (a,b)
-strictList (x:xs) = x `seq` x : strictList xs  strictList []     = []
+strictList (x:xs) = x `seq` x : strictList xs  
+strictList []     = []
 ```
-
-:::
 
 It is important to understand that `seq` isn't free: it has to perform  a check at runtime to see if an expression has been evaluated. Use it  sparingly. For instance, while our `strictPair` function evaluates the  contents of a pair up to the first constructor, it adds the overheads of  pattern matching, two applications of `seq`, and the construction of a  new tuple. If we were to measure its performance in the inner loop of a  benchmark, we might find it to slow the program down.
 
 Aside from its performance cost if overused, `seq` is not a miracle  cure-all for memory consumption problems. Just because you *can*
-evaluate something strictly doesn't mean you *should*. Careless use of
-`seq` may do nothing at all; move existing space leaks around; or  introduce new leaks.
+evaluate something strictly doesn't mean you *should*. Careless use of `seq` may do nothing at all; move existing space leaks around; or  introduce new leaks.
 
-The best guides to whether `seq` is necessary, and how well it is  working, are performance measurement and profiling, which we will cover  in [Chapter 25, *Profiling and  optimization*](25-profiling-and-optimization.org). From a base of  empirical measurement, you will develop a reliable sense of when `seq`
-is most useful.
+The best guides to whether `seq` is necessary, and how well it is  working, are performance measurement and profiling, which we will cover  in [Chapter 25, *Profiling and  optimization*](25-profiling-and-optimization.md). From a base of  empirical measurement, you will develop a reliable sense of when `seq` is most useful.
 
 ## Footnotes
 
-[^1]: Unfortunately, we do not have room to address that challenge in
-    this book.
+[^1]: Unfortunately, we do not have room to address that challenge in this book.
 
-[^2]: The backslash was chosen for its visual resemblance to the Greek
-    letter lambda, `λ`. Although GHC can accept Unicode input, it
-    correctly treats `λ` as a letter, not as a synonym for `\`.
+[^2]: The backslash was chosen for its visual resemblance to the Greek letter lambda, `λ`. Although GHC can accept Unicode input, it correctly treats `λ` as a letter, not as a synonym for `\`.
