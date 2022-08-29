@@ -67,6 +67,8 @@ library
       Ch04.SplitLines
       Ch04.SuffixTree
       Ch04.Sum
+      Ch05.ExportEverything
+      Ch05.ExportNothing
       Ch05.SimpleJSON
       Lib
   other-modules:

@@ -1,4 +1,13 @@
-module Ch05.SimpleJSON where
+module Ch05.SimpleJSON
+    ( JValue(..)
+    , getString
+    , getInt
+    , getDouble
+    , getBool
+    , getObject
+    , getArray
+    , isNull
+    ) where
 
 -- File: src/Ch05/SimpleJSON.hs
 data JValue = JString String

@@ -116,7 +116,7 @@ A Haskell source file contains a definition of a single *module*. A module lets 
 A source file begins with a *module declaration*. This must precede all other definitions in the source file.
 
 ```haskell
-module SimpleJSON
+module Ch05.SimpleJSON
     ( JValue(..)
     , getString
     , getInt
@@ -128,27 +128,28 @@ module SimpleJSON
     ) where
 ```
 
-The word `module` is reserved. It is followed by the name of the module,
-which must begin with a capital letter. A source file must have the same
-*base name* (the component before the suffix) as the name of the module it contains. This is why our file `SimpleJSON.hs` contains a module named `SimpleJSON`.
+The word `module` is reserved. It is followed by the name of the module, which must begin with a capital letter. A module name can also contain more than one identifiers beginning with capital letters, separated by dots, without intervening spaces, as the example shown above.
+
+A source file must have the same *base name* (the component before the suffix) as the last name of the module it contains, and module names can be thought of as being arranged in a hierarchy in which appending a new component creates a child of the original module name. Therefore, the module name `Ch05.SimpleJSON` means the srouce file name is `SimpleJSON.hs`, which is included in the directory `Ch05`.
 
 Following the module name is a list of *exports*, enclosed in parentheses. The `where` keyword indicates that the body of the module follows.
 
-The list of exports indicates which names in this module are visible to other modules. This lets us keep private code hidden from the outside world. The special notation `(..)` that follows the name `JValue`
-indicates that we are exporting both the type and all of its constructors.
+The list of exports indicates which names in this module are visible to other modules. This lets us keep private code hidden from the outside world. The special notation `(..)` that follows the name `JValue` indicates that we are exporting both the type and all of its constructors.
 
 It might seem strange that we can export a type's name (i.e. its type constructor), but not its value constructors. The ability to do this is important: it lets us hide the details of a type from its users, making the type *abstract*. If we cannot see a type's value constructors, we cannot pattern match against a value of that type, nor can we construct a new value of that type. Later in this chapter, we'll discuss some situations in which we might want to make a type abstract.
 
 If we omit the exports (and the parentheses that enclose them) from a module declaration, every name in the module will be exported.
 
 ```haskell
-module ExportEverything where
+-- File: src/Ch05/ExportEverything.hs
+module Ch05.ExportEverything where
 ```
 
 To export no names at all (which is rarely useful), we write an empty export list using a pair of parentheses.
 
 ```haskell
-module ExportNothing () where
+-- File: src/Ch05/ExportNothing.hs
+module Ch05.ExportNothing () where
 ```
 
 ## Compiling Haskell source
