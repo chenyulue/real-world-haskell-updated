@@ -38,7 +38,7 @@ executables:
 
   wc:
     main:                wc.hs
-    source-dirs:         app/Ch01
+    source-dirs:         app/ch01
     ghc-options:
     - -threaded
     - -rtsopts
@@ -48,7 +48,7 @@ executables:
 
   interact:
     main:                interactWith.hs
-    source-dirs:         app/Ch04
+    source-dirs:         app/ch04
     ghc-options:
     - -threaded
     - -rtsopts
@@ -58,13 +58,23 @@ executables:
 
   fixLines:
     main:                fixLines.hs
-    source-dirs:         app/Ch04
+    source-dirs:         app/ch04
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
     - real-world-haskell-updated  
+
+  simple:
+    main:                Main.hs
+    source-dirs:         app/ch05
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - real-world-haskell-updated 
 
 tests:
   real-world-haskell-updated-test:

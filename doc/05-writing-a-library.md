@@ -159,11 +159,10 @@ In addition to the `ghci` interpreter, the GHC distribution includes a compiler,
 To compile a source file, we first open a terminal or command prompt window, then invoke `ghc` with the name of the source file to compile.
 
 ```screen
-ghc -c SimpleJSON.hs
+$ ghc -c SimpleJSON.hs
 ```
 
-The `-c` option tells `ghc` to only generate object code. If we were to omit the `-c` option, the compiler would attempt to generate a complete executable. That would fail, because we haven't written a `main`
-function, which GHC calls to start the execution of a standalone program.
+The `-c` option tells `ghc` to only generate object code. If we were to omit the `-c` option, the compiler would attempt to generate a complete executable. That would fail, because we haven't written a `main` function, which GHC calls to start the execution of a standalone program.
 
 After `ghc` completes, if we list the contents of the directory, it should contain two new files: `SimpleJSON.hi` and `SimpleJSON.o`. The former is an *interface file*, in which `ghc` stores information about the names exported from our module in machine-readable form. The latter is an *object file*, which contains the generated machine code.
 
@@ -172,30 +171,27 @@ After `ghc` completes, if we list the contents of the directory, it should conta
 Now that we've successfully compiled our minimal library, we'll write a tiny program to exercise it. Create the following file in your text editor, and save it as `Main.hs`.
 
 ```haskell
+-- File: app/Ch05/Main.hs
 module Main where
 
-import SimpleJSON
+import Ch05.SimpleJSON
 
 main = print (JObject [("foo", JNumber 1), ("bar", JBool False)])
 ```
 
-Notice the `import` directive that follows the module declaration. This indicates that we want to take all of the names that are exported from the `SimpleJSON` module, and make them available in our module. Any
-`import` directives must appear in a group at the beginning of a module. They must appear after the module declaration, but before all other code. We cannot, for example, scatter them throughout a source file.
+Notice the `import` directive that follows the module declaration. This indicates that we want to take all of the names that are exported from the `CH05.SimpleJSON` module, and make them available in our module. Any `import` directives must appear in a group at the beginning of a module. They must appear after the module declaration, but before all other code. We cannot, for example, scatter them throughout a source file.
 
 Our choice of naming for the source file and function is deliberate. To create an executable, `ghc` expects a module named `Main` that contains a function named `main`. The `main` function is the one that will be called when we run the program once we've built it.
 
 ```screen
-ghc -o simple Main.hs
+$ ghc -o simple Main.hs
 ```
 
-This time around, we're omitting the `-c` option when we invoke `ghc`,
-so it will attempt to generate an executable. The process of generating an executable is called *linking*. As our command line suggests, `ghc`
-is perfectly able to both compile source files and link an executable in a single invocation.
+This time around, we're omitting the `-c` option when we invoke `ghc`, so it will attempt to generate an executable. The process of generating an executable is called *linking*. As our command line suggests, `ghc` is perfectly able to both compile source files and link an executable in a single invocation.
 
 We pass `ghc` a new option, `-o`, which takes one argument: this is the name of the executable that `ghc` should create[^1]. Here, we've decided to name the program `simple`. On Windows, the program will have the suffix `.exe`, but on Unix variants there will not be a suffix.
 
-Finally, we supply the name of our new source file, `Main.hs`. If `ghc`
-notices that it has already compiled a source file into an object file,
+Finally, we supply the name of our new source file, `Main.hs`. If `ghc` notices that it has already compiled a source file into an object file,
 it will only recompile the source file if we've modified it.
 
 Once `ghc` has finished compiling and linking our `simple` program, we can run it from the command line.
@@ -207,14 +203,17 @@ Now that we have a Haskell representation for JSON's types, we'd like to be able
 There are a few ways we could go about this. Perhaps the most direct would be to write a rendering function that prints a value in JSON form. Once we're done, we'll explore some more interesting approaches.
 
 ```haskell
-module PutJSON where
+-- File: src/Ch05/PutJSON.hs
+module Ch05.PutJSON where
 
 import Data.List (intercalate)
-import SimpleJSON
+import Ch05.SimpleJSON
 
 renderJValue :: JValue -> String
 
-renderJValue (JString s)   = show s renderJValue (JNumber n)   = show n renderJValue (JBool True)  = "true"
+renderJValue (JString s)   = show s 
+renderJValue (JNumber n)   = show n 
+renderJValue (JBool True)  = "true"
 renderJValue (JBool False) = "false"
 renderJValue JNull         = "null"
 
@@ -231,6 +230,7 @@ renderJValue (JArray a) = "[" ++ values a ++ "]"
 Good Haskell style involves separating pure code from code that performs I/O. Our `renderJValue` function has no interaction with the outside world, but we still need to be able to print a `JValue`.
 
 ```haskell
+-- File: src/Ch05/PutJSON.hs
 putJValue :: JValue -> IO ()
 putJValue v = putStrLn (renderJValue v)
 ```
@@ -247,12 +247,12 @@ A Haskell compiler's ability to infer types is powerful and valuable. Early on, 
 
 Skimping on explicit type information has a downside, one that disproportionately affects new Haskell programmer. As a new Haskell programmer, we're extremely likely to write code that will fail to compile due to straightforward type errors.
 
-When we omit explicit type information, we force the compiler to figure out our intentions. It will infer types that are logical and consistent,
-but perhaps not at all what we meant. If we and the compiler unknowingly disagree about what is going on, it will naturally take us longer to find the source of our problem.
+When we omit explicit type information, we force the compiler to figure out our intentions. It will infer types that are logical and consistent, but perhaps not at all what we meant. If we and the compiler unknowingly disagree about what is going on, it will naturally take us longer to find the source of our problem.
 
 Suppose, for instance, that we write a function that we believe returns a `String`, but we don't write a type signature for it.
 
 ```haskell
+-- File: src/Ch05/Trouble.hs
 import Data.Char
 
 upcaseFirst (c:cs) = toUpper c -- forgot ":cs" here
@@ -261,42 +261,41 @@ upcaseFirst (c:cs) = toUpper c -- forgot ":cs" here
 Here, we want to upper-case the first character of a word, but we've forgotten to append the rest of the word onto the result. We think our function's type is `String -> String`, but the compiler will correctly infer its type as `String -> Char`. Let's say we then try to use this function somewhere else.
 
 ```haskell
-camelCase :: String -> String camelCase xs = concat (map upcaseFirst (words xs))
+-- File: src/Ch05/Trouble.hs
+camelCase :: String -> String 
+camelCase xs = concat (map upcaseFirst (words xs))
 ```
 
 When we try to compile this code or load it into `ghci`, we won't necessarily get an obvious error message.
 
 ```screen  
 ghci> :load Trouble
-[1 of 1] Compiling Main             ( Trouble.hs, interpreted )
+[1 of 1] Compiling Ch05.Trouble     ( Trouble.hs, interpreted )
 
-Trouble.hs:6:24: error:
+Trouble.hs:9:24: error:
     • Couldn't match type ‘Char’ with ‘[Char]’
-      Expected type: [[Char]]
-        Actual type: [Char]
+      Expected: [[Char]]
+        Actual: [Char]
     • In the first argument of ‘concat’, namely
         ‘(map upcaseFirst (words xs))’
       In the expression: concat (map upcaseFirst (words xs))
       In an equation for ‘camelCase’:
           camelCase xs = concat (map upcaseFirst (words xs))
   |
-6 | camelCase xs = concat (map upcaseFirst (words xs))
+9 | camelCase xs = concat (map upcaseFirst (words xs))
   |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Failed, no modules loaded.
 ```
 
-Notice that the error is reported where we *use* the `upcaseFirst`
-function. If we're erroneously convinced that our definition and type for `upcaseFirst` are correct, we may end up staring at the wrong piece of code for quite a while, until enlightenment strikes.
+Notice that the error is reported where we *use* the `upcaseFirst` function. If we're erroneously convinced that our definition and type for `upcaseFirst` are correct, we may end up staring at the wrong piece of code for quite a while, until enlightenment strikes.
 
 Every time we write a type signature, we remove a degree of freedom from the type inference engine. This reduces the likelihood of divergence between our understanding of our code and the compiler's. Type declarations also act as shorthand for ourselves as readers of our own code, making it easier for us to develop a sense of what must be going on.
 
 This is not to say that we need to pepper every tiny fragment of code with a type declaration. It is, however, usually good form to add a signature to every top-level definition in our code. It's best to start out fairly aggressive with explicit type signatures, and slowly ease back as your mental model of how type checking works becomes more accurate.
 
-::: {.TIP}
-Explicit types, undefined values, and error
-
-The special value `undefined` will happily type-check no matter where we use it, as will an expression like `error "argh!"`. It is especially important that we write type signatures when we use these. Suppose we use `undefined` or `error "write me"` to act as a placeholder in the body of a top-level definition. If we omit a type signature, we may be able to use the value we have defined in places where a correctly typed version would be rejected by the compiler. This can easily lead us astray.
-:::
+> 💡 **Explicit types, undefined values, and error**
+>
+> The special value `undefined` will happily type-check no matter where we use it, as will an expression like `error "argh!"`. It is especially important that we write type signatures when we use these. Suppose we use `undefined` or `error "write me"` to act as a placeholder in the body of a top-level definition. If we omit a type signature, we may be able to use the value we have defined in places where a correctly typed version would be rejected by the compiler. This can easily lead us astray.
 
 ## A more general look at rendering
 
