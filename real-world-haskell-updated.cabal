@@ -69,6 +69,9 @@ library
       Ch04.Sum
       Ch05.ExportEverything
       Ch05.ExportNothing
+      Ch05.Prettify
+      Ch05.PrettyJSON
+      Ch05.PrettyStub
       Ch05.PutJSON
       Ch05.SimpleJSON
       Ch05.Trouble

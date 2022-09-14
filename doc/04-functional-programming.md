@@ -1271,7 +1271,7 @@ Due to the thunking behavior of `foldl`, it is wise to avoid this  function in r
     Left "non-digit 'o'"
     ```
 
-3. The Prelude function `concat` concatenates a list of lists into a single list, and has the following type.
+3. <span id="Exercises3">The Prelude</span> function `concat` concatenates a list of lists into a single list, and has the following type.
 
     ```haskell
     concat :: [[a]] -> [a]
