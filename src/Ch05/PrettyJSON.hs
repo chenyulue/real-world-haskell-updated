@@ -15,7 +15,8 @@ import Ch05.Prettify
     , fsep
     , (<>)
     , char
-    , hcat )
+    , hcat
+    , compact )
 
 renderJValue :: JValue -> Doc 
 renderJValue (JBool True)  = text "true"

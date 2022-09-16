@@ -159,7 +159,7 @@ In addition to the `ghci` interpreter, the GHC distribution includes a compiler,
 To compile a source file, we first open a terminal or command prompt window, then invoke `ghc` with the name of the source file to compile.
 
 ```screen
-$ ghc -c SimpleJSON.hs
+ghc -c SimpleJSON.hs
 ```
 
 The `-c` option tells `ghc` to only generate object code. If we were to omit the `-c` option, the compiler would attempt to generate a complete executable. That would fail, because we haven't written a `main` function, which GHC calls to start the execution of a standalone program.
@@ -184,7 +184,7 @@ Notice the `import` directive that follows the module declaration. This indicate
 Our choice of naming for the source file and function is deliberate. To create an executable, `ghc` expects a module named `Main` that contains a function named `main`. The `main` function is the one that will be called when we run the program once we've built it.
 
 ```screen
-$ ghc -o simple Main.hs
+ghc -o simple Main.hs
 ```
 
 This time around, we're omitting the `-c` option when we invoke `ghc`, so it will attempt to generate an executable. The process of generating an executable is called *linking*. As our command line suggests, `ghc` is perfectly able to both compile source files and link an executable in a single invocation.
@@ -728,11 +728,12 @@ Notice that we always call `flatten` on the left element of a `Union`: the left 
 
 We frequently need to use a representation for a piece of data that contains as few characters as possible. For example, if we're sending JSON data over a network connection, there's no sense in laying it out nicely: the software on the far end won't care whether the data is pretty or not, and the added white space needed to make the layout look good would add a lot of overhead.
 
-For these cases, and because it's a simple piece of code to start with,
-we provide a bare-bones compact rendering function.
+For these cases, and because it's a simple piece of code to start with, we provide a bare-bones compact rendering function.
 
 ```haskell
-compact :: Doc -> String compact x = transform [x]
+-- File: src/Ch05/Prettify.hs
+compact :: Doc -> String 
+compact x = transform [x]
     where transform [] = ""
           transform (d:ds) =
               case d of
@@ -744,19 +745,16 @@ compact :: Doc -> String compact x = transform [x]
                 _ `Union` b  -> transform (b:ds)
 ```
 
-The `compact` function wraps its argument in a list, and applies the
-`transform` helper function to it. The `transform` function treats its argument as a stack of items to process, where the first element of the list is the top of the stack.
+The `compact` function wraps its argument in a list, and applies the `transform` helper function to it. The `transform` function treats its argument as a stack of items to process, where the first element of the list is the top of the stack.
 
-The `transform` function's `(d:ds)` pattern breaks the stack into its head, `d`, and the remainder, `ds`. In our `case` expression, the first several branches recurse on `ds`, consuming one item from the stack for each recursive application. The last two branches add items in front of
-`ds`: the `Concat` branch adds both elements to the stack, while the
-`Union` branch ignores its left element, on which we called `flatten`,
-and adds its right element to the stack.
+The `transform` function's `(d:ds)` pattern breaks the stack into its head, `d`, and the remainder, `ds`. In our `case` expression, the first several branches recurse on `ds`, consuming one item from the stack for each recursive application. The last two branches add items in front of `ds`: the `Concat` branch adds both elements to the stack, while the `Union` branch ignores its left element, on which we called `flatten`, and adds its right element to the stack.
 
 We have now fleshed out enough of our original skeletal definitions that we can try out our `compact` function in `ghci`.
 
 ```screen  
 ghci> let value = renderJValue (JObject [("f", JNumber 1), ("q", JBool True)]) 
-ghci> :type value value :: Doc 
+ghci> :type value 
+value :: Doc 
 ghci> putStrLn (compact value)
 {"f": 1.0,
 "q": true
@@ -772,35 +770,24 @@ ghci> compact (char 'f' <> text "oo")
 "foo"
 ```
 
-When we apply `compact`, it turns its argument into a list and applies
-`transform`.
+When we apply `compact`, it turns its argument into a list and applies `transform`.
 
-- The `transform` function receives a one-item list, which matches the
-    `(d:ds)` pattern. Thus `d` is the value `Concat (Char 'f')
-     (Text "oo")`, and `ds` is the empty list, `[]`.
+- The `transform` function receives a one-item list, which matches the `(d:ds)` pattern. Thus `d` is the value `Concat (Char 'f') (Text "oo")`, and `ds` is the empty list, `[]`.
 
-    Since `d`\'s constructor is `Concat`, the `Concat` pattern matches
-    in the `case` expression. On the right hand side, we add `Char 'f'`
-    and `Text "oo"` to the stack, and apply `transform` recursively.
+  Since `d`'s constructor is `Concat`, the `Concat` pattern matches in the `case` expression. On the right hand side, we add `Char 'f'` and `Text "oo"` to the stack, and apply `transform` recursively.
 
-  - The `transform` function receives a two-item list, again
-        matching the `(d:ds)` pattern. The variable `d` is bound to
-        `Char 'f'`, and `ds` to `[Text "oo"]`.
+- 
+  - The `transform` function receives a two-item list, again matching the `(d:ds)` pattern. The variable `d` is bound to `Char 'f'`, and `ds` to `[Text "oo"]`.
 
-        The `case` expression matches in the `Char` branch. On the right
-        hand side, we use `(:)` to construct a list whose head is `'f'`,
-        and whose body is the result of a recursive application of
-        `transform`.
+    The `case` expression matches in the `Char` branch. On the right hand side, we use `(:)` to construct a list whose head is `'f'`, and whose body is the result of a recursive application of `transform`.
 
-    - The recursive invocation receives a one-item list. The
-            variable `d` is bound to `Text "oo"`, and `ds` to `[]`.
+  - 
+    - The recursive invocation receives a one-item list. The variable `d` is bound to `Text "oo"`, and `ds` to `[]`.
 
-            The `case` expression matches in the `Text` branch. On the
-            right hand side, we use `(++)` to concatenate `"oo"` with
-            the result of a recursive application of `transform`.
+      The `case` expression matches in the `Text` branch. On the right hand side, we use `(++)` to concatenate `"oo"` with the result of a recursive application of `transform`.
 
-      - In the final invocation, `transform` is invoked with an
-                empty list, and returns an empty string.
+    - 
+      - In the final invocation, `transform` is invoked with an empty list, and returns an empty string.
 
     - The result is `"oo" ++ ""`.
 
@@ -808,21 +795,19 @@ When we apply `compact`, it turns its argument into a list and applies
 
 ### True pretty printing
 
-While our `compact` function is useful for machine-to-machine communication, its result is not always easy for a human to follow:
-there's very little information on each line. To generate more readable output, we'll write another function, `pretty`. Compared to `compact`,
-`pretty` takes one extra argument: the maximum width of a line, in columns. (We're assuming that our typeface is of fixed width.)
+While our `compact` function is useful for machine-to-machine communication, its result is not always easy for a human to follow: there's very little information on each line. To generate more readable output, we'll write another function, `pretty`. Compared to `compact`, `pretty` takes one extra argument: the maximum width of a line, in columns. (We're assuming that our typeface is of fixed width.)
 
 ```haskell
+-- File: src/Ch05/Prettify.hs
 pretty :: Int -> Doc -> String
 ```
 
-To be more precise, this `Int` parameter controls the behaviour of
-`pretty` when it encounters a `softline`. Only at a `softline` does
-`pretty` have the option of either continuing the current line or beginning a new line. Elsewhere, we must strictly follow the directives set out by the person using our pretty printing functions.
+To be more precise, this `Int` parameter controls the behaviour of `pretty` when it encounters a `softline`. Only at a `softline` does `pretty` have the option of either continuing the current line or beginning a new line. Elsewhere, we must strictly follow the directives set out by the person using our pretty printing functions.
 
 Here's the core of our implementation
 
 ```haskell
+-- File: src/Ch05/Prettify.hs
 pretty width x = best 0 [x]
     where best col (d:ds) =
               case d of
