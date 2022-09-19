@@ -91,3 +91,10 @@ pretty width x = best 0 [x]
           nicest col a b | (width - least) `fits` a = a
                          | otherwise                = b
                          where least = min width col
+
+
+fits :: Int -> String -> Bool 
+w `fits` _ | w < 0 = False 
+w `fits` ""        = True 
+w `fits` ('\n':_)  = True 
+w `fits` (c:cs)    = (w - 1) `fits` cs

@@ -825,21 +825,21 @@ pretty width x = best 0 [x]
                          where least = min width col
 ```
 
-Our `best` helper function takes two arguments: the number of columns emitted so far on the current line, and the list of remaining `Doc`
-values to process.
+Our `best` helper function takes two arguments: the number of columns emitted so far on the current line, and the list of remaining `Doc` values to process.
 
-In the simple cases, `best` updates the `col` variable in straightforward ways as it consumes the input. Even the `Concat` case is obvious: we push the two concatenated components onto our stack/list,
-and don't touch `col`.
+In the simple cases, `best` updates the `col` variable in straightforward ways as it consumes the input. Even the `Concat` case is obvious: we push the two concatenated components onto our stack/list, and don't touch `col`.
 
-The interesting case involves the `Union` constructor. Recall that we applied `flatten` to the left element, and did nothing to the right. Also, remember that `flatten` replaces newlines with spaces. Therefore,
-our job is to see which (if either) of the two layouts, the
-`flatten~ed one or the original, will fit into our
-~width` restriction.
+The interesting case involves the `Union` constructor. Recall that we applied `flatten` to the left element, and did nothing to the right. Also, remember that `flatten` replaces newlines with spaces. Therefore, our job is to see which (if either) of the two layouts, the `flatten`ed one or the original, will fit into our `width` restriction.
 
 To do this, we write a small helper that determines whether a single line of a rendered `Doc` value will fit into a given number of columns.
 
 ```haskell
-fits :: Int -> String -> Bool w `fits` _ | w < 0 = False w `fits` ""        = True w `fits` ('\n':_)  = True w `fits` (c:cs)    = (w - 1) `fits` cs
+-- File: src/Ch05/Prettify.hs
+fits :: Int -> String -> Bool 
+w `fits` _ | w < 0 = False 
+w `fits` ""        = True 
+w `fits` ('\n':_)  = True 
+w `fits` (c:cs)    = (w - 1) `fits` cs
 ```
 
 ### Following the pretty printer
@@ -851,26 +851,19 @@ ghci> empty </> char 'a'
 Concat (Union (Char ' ') Line) (Char 'a')
 ```
 
-We'll apply `pretty 2` on this value. When we first apply `best`, the value of `col` is zero. It matches the `Concat` case, pushes the values
-`Union (Char ' ') Line` and `Char 'a'` onto the stack, and applies itself recursively. In the recursive application, it matches on
-`Union (Char ' ') Line`.
+We'll apply `pretty 2` on this value. When we first apply `best`, the value of `col` is zero. It matches the `Concat` case, pushes the values `Union (Char ' ') Line` and `Char 'a'` onto the stack, and applies itself recursively. In the recursive application, it matches on `Union (Char ' ') Line`.
 
-At this point, we're going to ignore Haskell's usual order of evaluation. This keeps our explanation of what's going on simple,
-without changing the end result. We now have two subexpressions,
-`best 0 [Char ' ', Char 'a']` and `best 0 [Line, Char 'a']`. The first evaluates to `" a"`, and the second to `"\na"`. We then substitute these into the outer expression to give `nicest 0 " a"
+At this point, we're going to ignore Haskell's usual order of evaluation. This keeps our explanation of what's going on simple, without changing the end result. We now have two subexpressions, `best 0 [Char ' ', Char 'a']` and `best 0 [Line, Char 'a']`. The first evaluates to `" a"`, and the second to `"\na"`. We then substitute these into the outer expression to give `nicest 0 " a"
 "\na"`.
 
-To figure out what the result of `nicest` is here, we do a little substitution. The values of `width` and `col` are 0 and 2, respectively,
-so `least` is 0, and `width - least` is 2. We quickly evaluate
-`` 2 `fits` " a" `` in `ghci`.
+To figure out what the result of `nicest` is here, we do a little substitution. The values of `width` and `col` are 0 and 2, respectively, so `least` is 0, and `width - least` is 2. We quickly evaluate `` 2 `fits` " a" `` in `ghci`.
 
 ```screen  
 ghci> 2 `fits` " a"
 True
 ```
 
-Since this evaluates to `True`, the result of `nicest` here is `"
-a"`.
+Since this evaluates to `True`, the result of `nicest` here is `" a"`.
 
 If we apply our `pretty` function to the same JSON data as earlier, we can see that it produces different output depending on the width that we give it.
 
@@ -893,28 +886,24 @@ Our current pretty printer is spartan, so that it will fit within our space cons
 1. Write a function, `fill`, with the following type signature.
 
     ```haskell
+    -- File: src/Ch05/Prettity.hs
     fill :: Int -> Doc -> Doc
     ```
 
-    It should add spaces to a document until it is the given number of
-    columns wide. If it is already wider than this value, it should add
-    no spaces.
+    It should add spaces to a document until it is the given number of columns wide. If it is already wider than this value, it should add no spaces.
 
-2. Our pretty printer does not take *nesting* into account. Whenever we
-    open parentheses, braces, or brackets, any lines that follow should
-    be indented so that they are aligned with the opening character
-    until aa matching closing character is encountered.
+2. Our pretty printer does not take *nesting* into account. Whenever we open parentheses, braces, or brackets, any lines that follow should be indented so that they are aligned with the opening character until a matching closing character is encountered.
 
     Add support for nesting, with a controllable amount of indentation.
 
     ```haskell
+    -- File: src/Ch05/Prettify.hs
     nest :: Int -> Doc -> Doc
     ```
 
 ## Creating a package
 
-The Haskell community has built a standard set of tools, named Cabal,
-that help with building, installing, and distributing software. Cabal organises software as a *package*. A package contains one library, and possibly several executable programs.
+The Haskell community has built a standard set of tools, named Cabal, that help with building, installing, and distributing software. Cabal organises software as a *package*. A package contains one library, and possibly several executable programs.
 
 ### Writing a package description
 
